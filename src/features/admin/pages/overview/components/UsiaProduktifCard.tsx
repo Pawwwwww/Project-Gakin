@@ -1,0 +1,70 @@
+import { useState } from "react";
+import { Activity } from "lucide-react";
+import { motion } from "motion/react";
+import { useAdminTheme } from "../../../hooks/AdminThemeContext";
+
+export function UsiaProduktifCard() {
+  const { isDark } = useAdminTheme();
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const cardBg = isDark ? "bg-white/5 border-white/10" : "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
+  const hoverCardBg = isDark ? "hover:border-emerald-400/30" : "hover:border-emerald-400";
+  const textPrimary = isDark ? "text-white" : "text-gray-900";
+  const textSecondary = isDark ? "text-gray-400" : "text-gray-600";
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+      <div
+        className="relative w-full h-56 sm:h-44 cursor-pointer perspective-[1000px] group"
+        onClick={() => setIsFlipped(!isFlipped)}
+      >
+        <motion.div
+          className="w-full h-full relative preserve-3d transition-all duration-500"
+          initial={false}
+          animate={{ rotateX: isFlipped ? -180 : 0 }}
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          {/* FRONT SIDE */}
+          <div className={`absolute inset-0 backface-hidden flex items-center p-6 rounded-2xl border ${cardBg} backdrop-blur-xl ${hoverCardBg} transition-colors overflow-hidden`}>
+            <div className="absolute -right-4 -top-4 w-32 h-32 opacity-10 blur-[30px] rounded-full transition-opacity group-hover:opacity-20 bg-emerald-500" />
+            
+            <div className="flex items-center gap-5 w-full">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center border bg-emerald-500/10 text-emerald-500 border-emerald-500/20 transition-transform duration-300 group-hover:scale-105 shrink-0">
+                <Activity className="w-8 h-8 drop-shadow-md" />
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-sm sm:text-base font-medium mb-1 ${textSecondary}`}>Usia Produktif & Aktif</h3>
+                <div className="flex items-baseline gap-2">
+                  <p className={`text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm ${textPrimary}`}>85%</p>
+                  <span className={`text-xs ${textSecondary}`}>(1.060 orang)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* BACK SIDE */}
+          <div 
+            className={`absolute inset-0 backface-hidden flex items-center p-6 rounded-2xl border ${cardBg} backdrop-blur-xl shadow-lg`}
+            style={{ transform: "rotateX(180deg)", backfaceVisibility: "hidden" }}
+          >
+            <div className="flex flex-col sm:flex-row gap-4 w-full h-full">
+              <div className={`flex-1 p-3 rounded-xl border flex flex-col justify-center ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+                <span className={`text-xs font-bold mb-1 ${textPrimary}`}>USIA PRODUKTIF</span>
+                <p className={`text-[11px] leading-relaxed ${textSecondary}`}>
+                  Responden yang berada dalam rentang usia kerja aktif (15 - 64 tahun) berdasarkan demografi BPS.
+                </p>
+              </div>
+              
+              <div className={`flex-1 p-3 rounded-xl border flex flex-col justify-center ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+                <span className={`text-xs font-bold mb-1 ${textPrimary}`}>AKTIF BERUSAHA</span>
+                <p className={`text-[11px] leading-relaxed ${textSecondary}`}>
+                  Bagian dari usia produktif yang saat ini mengelola atau memiliki kegiatan usaha mandiri.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
