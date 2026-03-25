@@ -6,7 +6,6 @@ import { useNavigate } from "react-router";
 import { getUsers, getKuesionerResult } from "../../../../services/StorageService";
 import { calcFullScore } from "../../../../services/ScoringService";
 import type { UserRecord } from "../../../../services/StorageService";
-import { useAdminTheme } from "../../hooks/AdminThemeContext";
 
 interface DataItem {
   id: string;
@@ -108,9 +107,7 @@ const ALL_COLUMNS: { key: ColumnKey; label: string; sortable?: boolean }[] = [
 const DEFAULT_VISIBLE = new Set<ColumnKey>(["nama", "nik", "kecamatan", "type", "phone", "bidangUsaha", "klaster"]);
 
 export default function Respondent() {
-  const navigate = useNavigate();
-  const { isDark } = useAdminTheme();
-  
+  const navigate = useNavigate();  
   const [searchTerm, setSearchTerm] = useState("");
   const [activeKlasterTab, setActiveKlasterTab] = useState<FilterKlasterTab>("Keseluruhan");
   const [showResetAllModal, setShowResetAllModal] = useState(false);
@@ -209,23 +206,23 @@ export default function Respondent() {
   };
 
   // ── THEME CLASSES ──
-  const textPrimary   = isDark ? "text-white" : "text-gray-900";
-  const textSecondary = isDark ? "text-gray-400" : "text-gray-600";
-  const bgCard        = isDark ? "bg-white/5 border-white/10" : "bg-white/95 border-gray-300 shadow-sm";
-  const bgTableCard   = isDark ? "bg-white/[0.02] border-white/10" : "bg-white/95 border-gray-300 shadow-md";
-  const tableHeader   = isDark ? "border-b border-white/10 text-gray-400 bg-white/5" : "border-b border-gray-300 text-gray-700 bg-gray-100/50";
-  const borderCol     = isDark ? "border-white/10" : "border-gray-300";
-  const rowHoverBg    = isDark ? "hover:bg-white/5" : "hover:bg-gray-100/50 shadow-sm";
-  const dropdownBg    = isDark ? "bg-[#111] border-white/10 text-gray-300" : "bg-white border-gray-300 text-gray-800 shadow-xl";
-  const dropdownHover = isDark ? "hover:bg-white/10" : "hover:bg-gray-50";
-  const inputBg       = isDark ? "bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-red-500/50" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-red-500 hover:border-gray-400 shadow-sm";
-  const btnOutline    = isDark ? "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white" : "bg-white border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-sm";
+  const textPrimary   = "text-gray-900";
+  const textSecondary = "text-gray-600";
+  const bgCard        = "bg-white/95 border-gray-300 shadow-sm";
+  const bgTableCard   = "bg-white/95 border-gray-300 shadow-md";
+  const tableHeader   = "border-b border-gray-300 text-gray-700 bg-gray-100/50";
+  const borderCol     = "border-gray-300";
+  const rowHoverBg    = "hover:bg-gray-100/50 shadow-sm";
+  const dropdownBg    = "bg-white border-gray-300 text-gray-800 shadow-xl";
+  const dropdownHover = "hover:bg-gray-50";
+  const inputBg       = "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 hover:border-gray-400 shadow-sm";
+  const btnOutline    = "bg-white border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-sm";
 
   const renderBatteryScore = (item: DataItem) => {
     if (!item.klaster || !item.scores) {
       return (
         <div className="flex items-center gap-2">
-          <span className={`text-xs italic shadow-sm px-3 py-1.5 rounded-md border ${isDark ? "bg-black/40 border-white/10 text-gray-400" : "bg-gray-50 border-gray-200 text-gray-500"}`}>
+          <span className={`text-xs italic shadow-sm px-3 py-1.5 rounded-md border ${"bg-gray-50 border-gray-200 text-gray-500"}`}>
             Belum Mengisi Kuesioner
           </span>
         </div>
@@ -236,7 +233,7 @@ export default function Respondent() {
     const avgScore = (grit + tipi + kewira) / 3;
     
     const clusterColors: Record<number, { gradient: string; solid: string }> = {
-      1: { gradient: "from-red-600 to-red-400", solid: "text-red-400" },
+      1: { gradient: "from-blue-600 to-blue-400", solid: "text-blue-400" },
       2: { gradient: "from-orange-500 to-orange-400", solid: "text-orange-400" },
       3: { gradient: "from-amber-400 to-yellow-400", solid: "text-amber-400" },
       4: { gradient: "from-emerald-500 to-emerald-400", solid: "text-emerald-400" },
@@ -250,7 +247,7 @@ export default function Respondent() {
           <span className={`text-xs font-bold ${colors.solid}`}>Klaster {item.klaster}</span>
           <span className={`text-xs font-bold ${textPrimary}`}>{avgScore.toFixed(0)}%</span>
         </div>
-        <div className={`h-2.5 w-full rounded-full border overflow-hidden relative ${isDark ? "bg-black/60 border-white/10" : "bg-gray-200 border-gray-300"}`}>
+        <div className={`h-2.5 w-full rounded-full border overflow-hidden relative ${"bg-gray-200 border-gray-300"}`}>
           <motion.div initial={{ width: 0 }} animate={{ width: `${avgScore}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
             className={`h-full bg-gradient-to-r ${colors.gradient} rounded-full`} />
         </div>
@@ -262,12 +259,12 @@ export default function Respondent() {
 
   const renderCellContent = (item: DataItem, col: ColumnKey) => {
     switch (col) {
-      case "nama": return <p className={`font-semibold transition-colors ${isDark ? "text-gray-100 group-hover:text-red-400" : "text-gray-800 group-hover:text-red-500"}`}>{item.nama}</p>;
-      case "nik": return <span className={`font-mono text-xs shadow-sm px-2 py-1 rounded-md border ${isDark ? "bg-black/40 text-gray-400 border-white/10" : "bg-gray-50 text-gray-600 border-gray-200"}`}>{item.nik}</span>;
+      case "nama": return <p className={`font-semibold transition-colors ${"text-gray-800 group-hover:text-blue-500"}`}>{item.nama}</p>;
+      case "nik": return <span className={`font-mono text-xs shadow-sm px-2 py-1 rounded-md border ${"bg-gray-50 text-gray-600 border-gray-200"}`}>{item.nik}</span>;
       case "kecamatan": return <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className={textSecondary}>{item.kecamatan}</span></div>;
       case "kelurahan": return <span className={textSecondary}>{item.kelurahan}</span>;
       case "alamatKtp": return <span className={`truncate max-w-[150px] inline-block ${textSecondary}`} title={item.alamatKtp}>{item.alamatKtp || "-"}</span>;
-      case "type": return <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border backdrop-blur-sm shadow-sm ${item.type === "GAKIN" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}>{item.type}</span>;
+      case "type": return <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border backdrop-blur-sm shadow-sm ${item.type === "GAKIN" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}>{item.type}</span>;
       case "usia": return <span className={textSecondary}>{item.usia ? `${item.usia} thn` : "-"}</span>;
       case "jenisKelamin": return <span className={textSecondary}>{item.jenisKelamin || "-"}</span>;
       case "phone": return <span className={textSecondary}>{item.phone || "-"}</span>;
@@ -285,8 +282,8 @@ export default function Respondent() {
       {showSuccessAlert && (
         <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[150] w-[90%] max-w-sm transition-all duration-500 ${isAlertExiting ? 'opacity-0 -translate-y-8 blur-sm scale-95' : 'opacity-100 translate-y-0'}`}>
           <div className="backdrop-blur-xl border border-emerald-500/40 shadow-2xl rounded-2xl p-4 flex items-start gap-4 bg-emerald-900/30">
-            <div className={`p-2 rounded-xl border shrink-0 ${isDark ? "border-white/10 bg-emerald-500/30" : "border-emerald-200 bg-emerald-100"}`}><CheckCircle className={`w-6 h-6 ${isDark ? "text-emerald-200" : "text-emerald-600"}`} /></div>
-            <div><h3 className="text-white font-bold text-sm mb-1">Berhasil</h3><p className={`text-xs ${isDark ? "text-emerald-100" : "text-emerald-900"}`}>{alertMsg}</p></div>
+            <div className={`p-2 rounded-xl border shrink-0 ${"border-emerald-200 bg-emerald-100"}`}><CheckCircle className={`w-6 h-6 ${"text-emerald-600"}`} /></div>
+            <div><h3 className="text-white font-bold text-sm mb-1">Berhasil</h3><p className={`text-xs ${"text-emerald-900"}`}>{alertMsg}</p></div>
           </div>
         </div>
       )}
@@ -295,7 +292,7 @@ export default function Respondent() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
           <h1 className={`text-2xl font-bold flex items-center gap-3 ${textPrimary}`}>
-            <div className="p-2 bg-red-500/20 rounded-lg text-red-500 border border-red-500/30"><Users className="w-6 h-6 shadow-inner" /></div>
+            <div className="p-2 bg-blue-500/20 rounded-lg text-blue-500 border border-blue-500/30"><Users className="w-6 h-6 shadow-inner" /></div>
             Hasil Klasifikasi Kuesioner
           </h1>
           <button onClick={() => setShowResetAllModal(true)}
@@ -314,9 +311,9 @@ export default function Respondent() {
           <Users className={`w-4 h-4 mx-2 ${textSecondary}`} />
           {KLASTER_OPTIONS.map((opt) => (
             <button key={opt.key} onClick={() => handleKlasterTabChange(opt.key)}
-              className={`relative px-5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${activeKlasterTab === opt.key ? (isDark ? "text-white" : "text-gray-900") : "text-gray-500 hover:text-red-500"}`}>
+              className={`relative px-5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${activeKlasterTab === opt.key ? ("text-gray-900") : "text-gray-500 hover:text-blue-500"}`}>
               {activeKlasterTab === opt.key && (
-                <motion.div layoutId="active-respondent-filter" className={`absolute inset-0 rounded-lg ${isDark ? "bg-white/10" : "bg-gray-100"}`}
+                <motion.div layoutId="active-respondent-filter" className={`absolute inset-0 rounded-lg ${"bg-gray-100"}`}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }} />
               )}
               <span className="relative z-10">{opt.label}</span>
@@ -340,7 +337,7 @@ export default function Respondent() {
                     {ALL_COLUMNS.map(col => (
                       <button key={col.key} onClick={() => toggleColumn(col.key)}
                         className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 ${dropdownHover}`}>
-                        <div className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all ${visibleColsSet.has(col.key) ? "bg-red-500/80 border-red-500/50 shadow-sm" : `border-gray-300 ${isDark ? "bg-black/20" : "bg-white"}`}`}>
+                        <div className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all ${visibleColsSet.has(col.key) ? "bg-blue-500/80 border-blue-500/50 shadow-sm" : `border-gray-300 ${"bg-white"}`}`}>
                           {visibleColsSet.has(col.key) && <Check className="w-3 h-3 text-white" />}
                         </div>
                         <span className={visibleColsSet.has(col.key) ? textPrimary : textSecondary}>{col.label}</span>
@@ -357,9 +354,9 @@ export default function Respondent() {
       {/* ── SEARCH BAR ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="relative w-full sm:max-w-md group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-red-500 transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
           <input type="text" placeholder="Cari NIK atau nama..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            className={`w-full pl-10 pr-4 py-2.5 shadow-sm backdrop-blur-md border rounded-xl focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50 text-sm transition-all outline-none ${inputBg}`} />
+            className={`w-full pl-10 pr-4 py-2.5 shadow-sm backdrop-blur-md border rounded-xl focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm transition-all outline-none ${inputBg}`} />
         </div>
         <div className={`flex items-center gap-3 text-sm ${textSecondary}`}>
           {filteredData.length} data ditemukan
@@ -377,16 +374,16 @@ export default function Respondent() {
                 {ALL_COLUMNS.filter(c => visibleColsSet.has(c.key)).map(col => (
                   <th key={col.key} className="px-6 py-4">
                     {col.sortable ? (
-                      <button onClick={() => handleSort(col.key)} className="flex items-center gap-1.5 hover:text-red-400 transition-colors group">
+                      <button onClick={() => handleSort(col.key)} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors group">
                         {col.label}
-                        <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === col.key ? 'text-red-500' : 'text-gray-500 group-hover:text-red-400'}`} />
+                        <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === col.key ? 'text-blue-500' : 'text-gray-500 group-hover:text-blue-400'}`} />
                       </button>
                     ) : ( col.label )}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className={`divide-y text-sm ${isDark ? "divide-white/5" : "divide-gray-100"}`}>
+            <tbody className={`divide-y text-sm ${"divide-gray-100"}`}>
               {paginatedData.length > 0 ? (
                 paginatedData.map((item, index) => (
                   <motion.tr key={`${animKey}-${item.id}`} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.03 * index, duration: 0.4, ease: "easeOut" }}
@@ -403,7 +400,7 @@ export default function Respondent() {
                       <Database className="w-12 h-12 text-gray-500 drop-shadow-lg opacity-50" />
                       <p className={`font-medium ${textSecondary}`}>Tidak ada data responden yang ditemukan.</p>
                       <button onClick={() => { setSearchTerm(""); setActiveKlasterTab("Keseluruhan"); }} 
-                        className="mt-2 text-xs text-red-500 hover:text-red-400 flex items-center gap-1 font-semibold transition-colors">
+                        className="mt-2 text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-semibold transition-colors">
                         Reset Filter
                       </button>
                     </div>
@@ -420,8 +417,8 @@ export default function Respondent() {
             <span className={`text-sm font-medium ${textSecondary}`}>Rows</span>
             <div className="relative">
               <select value={rowsPerPage} onChange={(e) => handleRowsChange(Number(e.target.value))}
-                className={`appearance-none shadow-sm backdrop-blur-md border text-sm font-semibold rounded-lg px-4 py-2 pr-8 cursor-pointer transition-all outline-none focus:ring-1 focus:ring-red-500/50 ${btnOutline}`}>
-                {ROWS_OPTIONS.map(o => <option key={o} value={o} className={isDark ? "bg-[#111] text-white" : "bg-white text-gray-900"}>{o}</option>)}
+                className={`appearance-none shadow-sm backdrop-blur-md border text-sm font-semibold rounded-lg px-4 py-2 pr-8 cursor-pointer transition-all outline-none focus:ring-1 focus:ring-blue-500/50 ${btnOutline}`}>
+                {ROWS_OPTIONS.map(o => <option key={o} value={o} className={"bg-white text-gray-900"}>{o}</option>)}
               </select>
               <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${textSecondary}`} />
             </div>
@@ -436,7 +433,7 @@ export default function Respondent() {
               {getPageNumbers().map(num => (
                 <button key={num} onClick={() => { setCurrentPage(num); setAnimKey(k => k + 1); }}
                   className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
-                    currentPage === num ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20" : btnOutline
+                    currentPage === num ? "bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20" : btnOutline
                   }`}>{num}</button>
               ))}
             </div>
@@ -457,7 +454,7 @@ export default function Respondent() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute -inset-10 bg-black/60 backdrop-blur-md" onClick={() => setShowResetAllModal(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} 
-              className={`w-full max-w-md relative z-10 shadow-sm backdrop-blur-2xl border rounded-2xl p-6 shadow-2xl text-center ${isDark ? "bg-[#111] border-white/20" : "bg-white border-gray-200"}`}>
+              className={`w-full max-w-md relative z-10 shadow-sm backdrop-blur-2xl border rounded-2xl p-6 shadow-2xl text-center ${"bg-white border-gray-200"}`}>
               <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7 text-purple-500" /></div>
               <h3 className={`text-lg font-bold mb-2 ${textPrimary}`}>Reset Seluruh Kuesioner?</h3>
               <p className={`text-sm mb-6 ${textSecondary}`}>Semua data terkait <strong>kuesioner baterai dan klaster</strong> akan dihapus dari seluruh responden. Data subjek asalnya akan tetap ada. Tindakan ini tidak dapat dibatalkan.</p>

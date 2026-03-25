@@ -14,10 +14,10 @@ export function LoginUserForm({ nik, onChange, onSubmit, onRegister }: LoginUser
       {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-white/50 dark:bg-slate-700/50 backdrop-blur-md border border-white/60 dark:border-slate-600 rounded-full mb-4 shadow-lg">
-          <User className="w-8 h-8 text-red-700 dark:text-red-400" />
+          <User className="w-8 h-8 text-blue-700 dark:text-blue-400" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Selamat Datang</h1>
-        <p className="text-gray-500 dark:text-gray-300 text-sm">Sistem Informasi BRIDA Kota Surabaya</p>
+        <p className="text-gray-500 dark:text-gray-300 text-sm"><i>Sudah siap berkembang dengan BRIDA-STEP</i> ?</p>
       </div>
 
       {/* Form */}
@@ -32,18 +32,17 @@ export function LoginUserForm({ nik, onChange, onSubmit, onRegister }: LoginUser
               type="text"
               value={nik}
               onChange={(e) => onChange(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-white/50 dark:border-slate-600 bg-white/50 dark:bg-slate-700/50 backdrop-blur-md dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm placeholder:text-gray-400 shadow-sm"
+              className="block w-full pl-10 pr-3 py-3 border border-white/50 dark:border-slate-600 bg-white/50 dark:bg-slate-700/50 backdrop-blur-md dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm placeholder:text-gray-400 shadow-sm"
               placeholder="Masukkan NIK Anda"
               maxLength={16}
               autoFocus
             />
           </div>
-          <p className="mt-1.5 text-xs text-gray-400">Kosongkan NIK jika Anda adalah Admin.</p>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-red-700/90 backdrop-blur-sm text-white py-3 rounded-lg font-semibold hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all shadow-lg shadow-red-700/20"
+          className="w-full bg-blue-700/90 backdrop-blur-sm text-white py-3 rounded-lg font-semibold hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-lg shadow-blue-700/20"
         >
           Lanjutkan
         </button>
@@ -54,7 +53,7 @@ export function LoginUserForm({ nik, onChange, onSubmit, onRegister }: LoginUser
         <button
           type="button"
           onClick={onRegister}
-          className="text-red-700 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-semibold hover:underline transition-colors"
+          className="text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold hover:underline transition-colors"
         >
           Daftar Sekarang
         </button>

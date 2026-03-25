@@ -200,21 +200,7 @@ export const generateRaporPDF = async (completeUser: UserRecord, kuesionerResult
   rowSeparator();
 
   // Alamat Domisili (Dipecah per baris)
-  if (completeUser.domisiliSama) {
-    row("Alamat Domisili", "Sama dengan KTP");
-  } else {
-    checkPage(40);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Alamat Domisili", col1, y);
-    pdf.text(":", col2 - 10, y);
-    y += 18;
-    row("  Alamat Lengkap", completeUser.alamatDomisili || "-");
-    row("  RT / RW", `${completeUser.rtDomisili || "-"} / ${completeUser.rwDomisili || "-"}`);
-    row("  Kelurahan", completeUser.kelurahanDomisili || "-");
-    row("  Kecamatan", completeUser.kecamatanDomisili || "-");
-    row("  Kota", completeUser.kotaDomisili || "-");
-    row("  Kode Pos", completeUser.kodePosDomisili || "-");
-  }
+  row("Alamat Domisili", "Sama dengan KTP");
   rowSeparator();
 
   row("Punya Usaha", completeUser.punyaUsaha === "ya" ? "Ya" : "Tidak");

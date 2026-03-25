@@ -29,13 +29,13 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-red-700 shadow-sm border-b border-red-800">
+      <header className="bg-blue-800 shadow-sm border-b border-blue-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="hidden sm:block ml-1">
                 <p className="text-white font-bold text-sm leading-tight">BRIDA Kota Surabaya</p>
-                <p className="text-red-200 text-xs">Dashboard User</p>
+                <p className="text-blue-200 text-xs">Dashboard User</p>
               </div>
             </div>
             <button
@@ -63,14 +63,14 @@ export default function Dashboard() {
         </div>
 
         {/* Welcome Card */}
-        <div className="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl p-8 mb-8 text-white">
+        <div className="bg-gradient-to-r from-blue-800 to-blue-700 rounded-2xl p-8 mb-8 text-white">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
               <User className="w-8 h-8" />
             </div>
             <div>
               <h2 className="text-2xl font-bold mb-1">Halo, Administrator!</h2>
-              <p className="text-red-100">Panel Manajemen BRIDA Kota Surabaya</p>
+              <p className="text-blue-100">Panel Manajemen BRIDA Kota Surabaya</p>
             </div>
           </div>
         </div>
@@ -83,8 +83,8 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-600 mb-1">Total Dokumen</p>
                 <p className="text-3xl font-bold text-gray-900">12</p>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-red-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FileText className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
@@ -95,8 +95,8 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-600 mb-1">Pengajuan Aktif</p>
                 <p className="text-3xl font-bold text-gray-900">5</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Settings className="w-6 h-6 text-orange-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Settings className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function Dashboard() {
                 <div key={index} className="flex items-center space-x-4">
                   <div className={`w-2 h-2 rounded-full ${activity.status === "success" ? "bg-green-500" :
                     activity.status === "pending" ? "bg-yellow-500" :
-                      "bg-red-500"
+                      "bg-blue-600"
                     }`}></div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{activity.title}</p>

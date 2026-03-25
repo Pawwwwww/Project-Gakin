@@ -24,16 +24,7 @@ export interface UserRecord {
   kotaKtp: string;
   provinsiKtp: string;
   kodePosKtp: string;
-  // Alamat Domisili
-  alamatDomisili: string;
-  rtDomisili: string;
-  rwDomisili: string;
-  kelurahanDomisili: string;
-  kecamatanDomisili: string;
-  kotaDomisili: string;
-  provinsiDomisili: string;
-  kodePosDomisili: string;
-  domisiliSama?: boolean;
+  isSurabaya?: boolean;
   // Informasi Tambahan
   pendidikan: string;
   agama: string;
@@ -188,78 +179,20 @@ export function getAllKuesionerResults(): KuesionerSubmission[] {
   }
 }
 
-// ── Seed data dummy ───────────────────────────────────────────────────
-const KECAMATAN_LIST = ["Tegalsari", "Simokerto", "Genteng", "Bubutan", "Gubeng", "Bulak", "Karang Pilang", "Benowo"];
-const dummyNames = [
-  "Ahmad Budi Santoso", "Siti Aminah Fatmawati", "Bagus Dwi Wicaksono", "Lestari Ayu Puspita",
-  "Rizky Aditya Pratama", "Nadia Safira Kirana", "Fajar Hidayatullah", "Putri Maharani",
-  "Eko Prasetyo", "Dewi Sartika", "Hendra Setiawan", "Rina Wati", "Andi Syahputra",
-  "Susi Susanti", "Bambang Pamungkas", "Dian Sastrowardoyo", "Taufik Hidayat",
-  "Agnes Monica", "Reza Rahadian", "Raisa Andriana", "Luhut Binsar", "Joko Widodo"
-];
-
-function randInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+import { HARDCODED_USERS, HARDCODED_RESULTS } from '../data/hardcodedData';
 
 export function seedDummyUser(): void {
   const users = getUsers();
   // We only seed if there are extremely few users (e.g. initial load or wiped)
   if (users.length <= 5) {
-    for (let i = 0; i < dummyNames.length; i++) {
-      const nik = `35780${(10000000000 + i * 7351).toString()}`;
-      // Prevent seeding identical users
-      if (findUserByNIK(nik)) continue;
-      
-      const user: UserRecord = {
-        nik,
-        fullName: dummyNames[i],
-        gakinStatus: i % 3 === 0 ? "GAKIN" : "Non-GAKIN",
-        tanggalLahir: `199${randInt(0, 9)}-0${randInt(1, 9)}-1${randInt(0, 9)}`,
-        jenisKelamin: i % 2 === 0 ? "Laki-laki" : "Perempuan",
-        tempatLahir: "Surabaya",
-        phone: `081234567${100 + i}`,
-        pendidikan: i % 2 === 0 ? "SMA/SMK" : "S1",
-        agama: "Islam",
-        suku: "Jawa",
-        alamatKtp: `Jl. Pahlawan No. ${i + 1}`,
-        rtKtp: "01",
-        rwKtp: "02",
-        kelurahanKtp: "Ketabang",
-        kecamatanKtp: KECAMATAN_LIST[i % KECAMATAN_LIST.length],
-        kotaKtp: "Surabaya",
-        provinsiKtp: "Jawa Timur",
-        kodePosKtp: "60272",
-        alamatDomisili: `Jl. Pahlawan No. ${i + 1}`,
-        rtDomisili: "01",
-        rwDomisili: "02",
-        kelurahanDomisili: "Ketabang",
-        kecamatanDomisili: KECAMATAN_LIST[i % KECAMATAN_LIST.length],
-        kotaDomisili: "Surabaya",
-        provinsiDomisili: "Jawa Timur",
-        kodePosDomisili: "60272",
-        punyaUsaha: i % 4 !== 0 ? "ya" : "tidak",
-        bidangUsaha: ["Kuliner", "Fesyen", "Jasa", "Kriya"][i % 4],
-        penghasilanPerHari: "Rp 100.000 - Rp 500.000",
-        lamaBerusaha: "1-3 Tahun",
-        gantiUsaha: "Tidak Pernah",
-      };
-
-      saveUser(user);
-
-      // Kuesioner diisi untuk sebagian besar user
-      if (i < 18) {
-        const grit: Record<number, number> = {};
-        GRIT_QUESTIONS.forEach(q => { grit[q.id] = randInt(2, 5); });
-        
-        const kwu: Record<number, number> = {};
-        KWU_ITEMS.forEach(q => { kwu[q.id] = randInt(2, 5); });
-        
-        const tipi: Record<number, number> = {};
-        TIPI_QUESTIONS.forEach(q => { tipi[q.id] = randInt(2, 7); });
-
-        saveKuesionerResult(nik, { consent: true, grit, kwu, tipi });
-      }
-    }
+    localStorage.setItem(KEYS.USERS, JSON.stringify(HARDCODED_USERS));
+    
+    // Seed kuesioner results
+    // Write individual results
+    HARDCODED_RESULTS.forEach(res => {
+        localStorage.setItem(KEYS.KUESIONER_DONE(res.nik), JSON.stringify(res));
+    });
+    // Write aggregate
+    localStorage.setItem(KEYS.KUESIONER_ALL, JSON.stringify(HARDCODED_RESULTS));
   }
 }

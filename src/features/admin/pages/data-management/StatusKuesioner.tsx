@@ -4,7 +4,6 @@ import { AdminLayout } from "../../components/AdminLayout";
 import { motion, AnimatePresence } from "motion/react";
 import { getUsers, getKuesionerResult } from "../../../../services/StorageService";
 import type { UserRecord } from "../../../../services/StorageService";
-import { useAdminTheme } from "../../hooks/AdminThemeContext";
 
 interface DataItem {
   nik: string;
@@ -64,9 +63,7 @@ const ALL_COLUMNS: { key: ColumnKey; label: string; sortable?: boolean }[] = [
 
 const DEFAULT_VISIBLE = new Set<ColumnKey>(["nama", "nik", "kecamatan", "type", "status"]);
 
-export default function StatusKuesioner() {
-  const { isDark } = useAdminTheme();
-  const [searchTerm, setSearchTerm] = useState("");
+export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] = useState("");
   const [sortCol, setSortCol] = useState<ColumnKey | "">("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
@@ -137,24 +134,24 @@ export default function StatusKuesioner() {
   const displayCols = availableColumns.map(c => c.key).filter(c => visibleColsSet.has(c));
 
   // ── THEME CLASSES ──
-  const textPrimary   = isDark ? "text-white" : "text-gray-900";
-  const textSecondary = isDark ? "text-gray-400" : "text-gray-600";
-  const bgTableCard   = isDark ? "bg-white/[0.02] border-white/10" : "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
-  const bgCard        = isDark ? "bg-[#111] border-white/10" : "bg-white border-gray-300 shadow-xl";
-  const borderCol     = isDark ? "border-white/10" : "border-gray-300";
-  const dropdownHover = isDark ? "hover:bg-white/10" : "hover:bg-gray-50";
-  const rowHoverBg    = isDark ? "hover:bg-white/5" : "hover:bg-gray-50 shadow-sm";
-  const inputBg       = isDark ? "bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 hover:border-gray-400";
-  const btnOutline    = isDark ? "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white" : "bg-white border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-sm";
-  const tableHeader   = isDark ? "bg-white/5 text-gray-400 border-white/10" : "bg-gray-100/80 text-gray-600 border-gray-300";
+  const textPrimary   = "text-gray-900";
+  const textSecondary = "text-gray-600";
+  const bgTableCard   = "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
+  const bgCard        = "bg-white border-gray-300 shadow-xl";
+  const borderCol     = "border-gray-300";
+  const dropdownHover = "hover:bg-gray-50";
+  const rowHoverBg    = "hover:bg-gray-50 shadow-sm";
+  const inputBg       = "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 hover:border-gray-400";
+  const btnOutline    = "bg-white border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-sm";
+  const tableHeader   = "bg-gray-100/80 text-gray-600 border-gray-300";
 
   const renderCellContent = (item: DataItem, col: ColumnKey) => {
     switch (col) {
-      case "nama": return <p className={`font-semibold transition-colors ${isDark ? "text-gray-100 group-hover:text-blue-400" : "text-gray-800 group-hover:text-blue-600"}`}>{item.nama}</p>;
-      case "nik": return <span className={`font-mono text-xs shadow-sm px-2 py-1 rounded-md border ${isDark ? "bg-black/40 text-gray-400 border-white/10" : "bg-gray-50 text-gray-600 border-gray-200"}`}>{item.nik}</span>;
+      case "nama": return <p className={`font-semibold transition-colors ${"text-gray-800 group-hover:text-blue-600"}`}>{item.nama}</p>;
+      case "nik": return <span className={`font-mono text-xs shadow-sm px-2 py-1 rounded-md border ${"bg-gray-50 text-gray-600 border-gray-200"}`}>{item.nik}</span>;
       case "kecamatan": return <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className={textSecondary}>{item.kecamatan}</span></div>;
       case "kelurahan": return <span className={textSecondary}>{item.kelurahan}</span>;
-      case "type": return <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border backdrop-blur-sm shadow-sm ${item.type === "GAKIN" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}>{item.type}</span>;
+      case "type": return <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border backdrop-blur-sm shadow-sm ${item.type === "GAKIN" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}>{item.type}</span>;
       case "usia": return <span className={textSecondary}>{item.usia ? `${item.usia} thn` : "-"}</span>;
       case "jenisKelamin": return <span className={textSecondary}>{item.jenisKelamin || "-"}</span>;
       case "phone": return <span className={textSecondary}>{item.phone || "-"}</span>;
@@ -163,7 +160,7 @@ export default function StatusKuesioner() {
       case "status": {
         const filled = item.hasFilledKuesioner;
         return (
-          <span className={`text-xs font-bold px-3 py-1 rounded-full border shadow-sm ${!filled ? (isDark ? "bg-white/5 text-gray-400 border-white/10" : "bg-gray-100 text-gray-600 border-gray-300") : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"}`}>
+          <span className={`text-xs font-bold px-3 py-1 rounded-full border shadow-sm ${!filled ? ("bg-gray-100 text-gray-600 border-gray-300") : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"}`}>
             {filled ? "Sudah Mengisi" : "Belum Mengisi"}
           </span>
         );
@@ -213,7 +210,7 @@ export default function StatusKuesioner() {
                   {availableColumns.map(col => (
                     <button key={col.key} onClick={() => toggleColumn(col.key)}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 ${dropdownHover}`}>
-                      <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${visibleColsSet.has(col.key) ? "bg-blue-500/80 border-blue-500/50 shadow-sm" : `border-gray-300 ${isDark ? "bg-black/20" : "bg-white"}`}`}>
+                      <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${visibleColsSet.has(col.key) ? "bg-blue-500/80 border-blue-500/50 shadow-sm" : `border-gray-300 ${"bg-white"}`}`}>
                         {visibleColsSet.has(col.key) && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className={visibleColsSet.has(col.key) ? textPrimary : textSecondary}>{col.label}</span>
@@ -238,11 +235,11 @@ export default function StatusKuesioner() {
                   const isSorted = sortCol === colKey;
                   return (
                     <th key={colKey} onClick={() => colDef.sortable && handleSort(colKey)}
-                      className={`px-6 py-4 text-xs font-bold ${colDef.sortable ? `cursor-pointer ${isDark ? "hover:bg-white/5 hover:text-white" : "hover:bg-white hover:text-gray-900"} shadow-sm transition-colors select-none` : ""}`}>
+                      className={`px-6 py-4 text-xs font-bold ${colDef.sortable ? `cursor-pointer ${"hover:bg-white hover:text-gray-900"} shadow-sm transition-colors select-none` : ""}`}>
                       <div className="flex items-center gap-2">
                         {colDef.label}
                         {colDef.sortable && (
-                          <div className={`flex flex-col opacity-50 ${isDark ? "" : "text-gray-400"}`}>
+                          <div className={`flex flex-col opacity-50 ${"text-gray-400"}`}>
                             <ChevronDown className={`w-3 h-3 -mb-1 ${isSorted && sortDir === "asc" ? "text-blue-500 opacity-100" : ""}`} style={{ transform: "rotate(180deg)" }} />
                             <ChevronDown className={`w-3 h-3 ${isSorted && sortDir === "desc" ? "text-blue-500 opacity-100" : ""}`} />
                           </div>
@@ -253,7 +250,7 @@ export default function StatusKuesioner() {
                 })}
               </tr>
             </thead>
-            <tbody className={`divide-y text-sm ${isDark ? "divide-white/5" : "divide-gray-100"}`}>
+            <tbody className={`divide-y text-sm ${"divide-gray-100"}`}>
               {paginatedData.map((item) => (
                 <motion.tr key={item.nik} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className={`transition-colors group ${rowHoverBg}`}>
@@ -281,7 +278,7 @@ export default function StatusKuesioner() {
             <div className="relative">
               <select value={rowsPerPage} onChange={(e) => handleRowsChange(Number(e.target.value))}
                 className={`appearance-none shadow-sm border text-sm font-semibold rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500/50 cursor-pointer ${btnOutline}`}>
-                {ROWS_OPTIONS.map(opt => <option key={opt} value={opt} className={isDark ? "bg-[#111] text-white" : "bg-white text-gray-900"}>{opt}</option>)}
+                {ROWS_OPTIONS.map(opt => <option key={opt} value={opt} className={"bg-white text-gray-900"}>{opt}</option>)}
               </select>
               <ChevronDown className={`w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${textSecondary}`} />
             </div>

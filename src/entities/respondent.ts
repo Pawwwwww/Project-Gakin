@@ -200,9 +200,9 @@ export const KWU_GROUP_LABELS: Record<string, string> = {
 };
 
 export const KWU_GROUP_COLORS: Record<string, string> = {
-  "Ideas and Opportunities": "from-purple-700 to-purple-600",
-  Resources: "from-orange-600 to-orange-500",
-  "Into Action": "from-teal-700 to-teal-600",
+  "Ideas and Opportunities": "from-purple-800 to-purple-700",
+  Resources: "from-purple-600 to-purple-500",
+  "Into Action": "from-purple-400 to-purple-300",
 };
 
 // ── TIPI ─────────────────────────────────────────────────────────────
@@ -295,12 +295,12 @@ export const TIPI_DESCRIPTIONS: Record<TIPIAspect, Record<string, string>> = {
 export const KLUSTER_INFO: Record<number, { title: string; subtitle: string; color: string; bg: string; border: string; desc: string }> = {
   1: {
     title: "Cluster 1", subtitle: "Membutuhkan Dukungan Keterampilan dan Motivasi",
-    color: "text-red-800", bg: "bg-red-50", border: "border-red-300",
+    color: "text-blue-800", bg: "bg-blue-50", border: "border-blue-300",
     desc: "Menunjukkan penguatan ketekunan (GRIT), kedisiplinan dalam aktivitas sehari-hari, serta pembiasaan kerja yang produktif untuk mendukung perkembangan diri secara bertahap.",
   },
   2: {
     title: "Cluster 2", subtitle: "Membutuhkan Dukungan Keterampilan",
-    color: "text-orange-800", bg: "bg-blue-50", border: "border-blue-300",
+    color: "text-green-800", bg: "bg-green-50", border: "border-green-300",
     desc: "Menunjukkan keterampilan dasar yang baik serta potensi untuk terus berkembang melalui peningkatan keterampilan praktis dan konsistensi dalam aktivitas kerja.",
   },
   3: {

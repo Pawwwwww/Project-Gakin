@@ -70,10 +70,10 @@ export default function Login() {
   const isFlipped = mode === "admin";
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-700 ${
+    <div className={`min-h-screen flex items-center justify-center p-4 relative overflow-y-auto transition-colors duration-700 ${
       isFlipped
-        ? "bg-gradient-to-br from-gray-800 to-red-950"
-        : "bg-gradient-to-br from-red-50 via-red-100 to-red-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+        ? "bg-gradient-to-br from-gray-800 to-blue-900"
+        : "bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
     }`}>
 
       <AuthBackground dark={isFlipped} />
@@ -90,12 +90,15 @@ export default function Login() {
         )}
 
         {/* Flip Container */}
-        <div style={{ perspective: "1200px" }}>
+        <div style={{ perspective: "1200px", WebkitPerspective: "1200px" }}>
           <div style={{
             position: "relative", width: "100%", minHeight: "420px",
             transition: "transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1)",
+            WebkitTransition: "-webkit-transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1)",
             transformStyle: "preserve-3d",
+            WebkitTransformStyle: "preserve-3d",
             transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+            WebkitTransform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}>
 
             {/* Front: User Login */}

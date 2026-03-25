@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { motion } from "motion/react";
-import { useAdminTheme } from "../../../hooks/AdminThemeContext";
+import { useDashboardStats } from "../../../hooks/useDashboardStats";
 
 export function TotalRespondenCard() {
-  const { isDark } = useAdminTheme();
   const [isFlipped, setIsFlipped] = useState(false);
+  const stats = useDashboardStats();
 
-  const cardBg = isDark ? "bg-white/5 border-white/10" : "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
-  const hoverCardBg = isDark ? "hover:border-blue-400/30" : "hover:border-blue-400";
-  const textPrimary = isDark ? "text-white" : "text-gray-900";
-  const textSecondary = isDark ? "text-gray-400" : "text-gray-600";
+  const cardBg = "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
+  const hoverCardBg = "hover:border-blue-400";
+  const textPrimary = "text-gray-900";
+  const textSecondary = "text-gray-600";
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -25,7 +25,7 @@ export function TotalRespondenCard() {
           style={{ transformStyle: "preserve-3d" }}
         >
           {/* FRONT SIDE (Original Split View) */}
-          <div className={`absolute inset-0 backface-hidden rounded-2xl border ${cardBg} backdrop-blur-xl ${hoverCardBg} transition-colors overflow-hidden flex flex-col sm:flex-row p-4 sm:p-6 gap-4 sm:gap-6`}>
+          <div className={`absolute inset-0 backface-hidden rounded-2xl border ${cardBg} backdrop-blur-xl ${hoverCardBg} transition-colors overflow-hidden flex flex-col sm:flex-row p-4 sm:p-6 pb-8 sm:pb-8 gap-4 sm:gap-6`}>
             <div className="absolute -right-4 -top-4 w-32 h-32 opacity-10 blur-[30px] rounded-full transition-opacity group-hover:opacity-20 bg-blue-500" />
             
             {/* Left side: Icon & Total */}
@@ -35,29 +35,33 @@ export function TotalRespondenCard() {
               </div>
               <div>
                 <h3 className={`text-xs sm:text-sm font-medium mb-1 ${textSecondary}`}>Total Responden</h3>
-                <p className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight drop-shadow-sm ${textPrimary}`}>1.247</p>
+                <p className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight drop-shadow-sm ${textPrimary}`}>
+                  {stats.totalResponden.toLocaleString('id-ID')}
+                </p>
               </div>
             </div>
 
             {/* Right side: Breakdown */}
             <div className="flex flex-col gap-2 flex-1 justify-center relative z-10">
-              <div className={`flex justify-between items-center border p-2 sm:p-2.5 rounded-lg ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+              <div className={`flex justify-between items-center border p-2 sm:p-2.5 rounded-lg ${"bg-gray-50 border-gray-200"}`}>
                 <span className={`text-xs font-semibold ${textSecondary}`}>GAKIN</span>
                 <div className="text-right">
-                  <span className={`text-sm font-bold ${textPrimary}`}>500</span>
-                  <span className={`text-[10px] ml-1.5 ${textSecondary}`}>dari 2.000 terdata</span>
+                  <span className={`text-sm font-bold ${textPrimary}`}>{stats.gakinCount.toLocaleString('id-ID')}</span>
+                  <span className={`text-[10px] ml-1.5 ${textSecondary}`}>dari total terdata</span>
                 </div>
               </div>
-              <div className={`flex justify-between items-center border p-2 sm:p-2.5 rounded-lg ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+              <div className={`flex justify-between items-center border p-2 sm:p-2.5 rounded-lg ${"bg-gray-50 border-gray-200"}`}>
                 <span className={`text-xs font-semibold ${textSecondary}`}>Non-GAKIN</span>
                 <div className="text-right">
-                  <span className={`text-sm font-bold ${textPrimary}`}>747</span>
+                  <span className={`text-sm font-bold ${textPrimary}`}>{stats.nonGakinCount.toLocaleString('id-ID')}</span>
                   <span className={`text-[10px] ml-1.5 ${textSecondary}`}>responden sukarela</span>
                 </div>
               </div>
             </div>
 
-
+            <div className={`absolute bottom-2 left-0 right-0 text-center pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity ${textSecondary}`}>
+              <span className="text-[10px] font-medium">Klik untuk melihat informasi detail</span>
+            </div>
           </div>
 
           {/* BACK SIDE (Definitions) */}
@@ -66,7 +70,7 @@ export function TotalRespondenCard() {
             style={{ transform: "rotateX(180deg)", backfaceVisibility: "hidden" }}
           >
             <div className="flex flex-col sm:flex-row gap-4 w-full h-full">
-              <div className={`flex-1 p-4 rounded-xl border flex flex-col justify-center ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+              <div className={`flex-1 p-4 rounded-xl border flex flex-col justify-center ${"bg-gray-50 border-gray-200"}`}>
                 <span className={`text-xs font-bold mb-2 flex items-center gap-1.5 ${textPrimary}`}>
                   <Users className="w-3.5 h-3.5 text-blue-500" /> GAKIN
                 </span>
@@ -75,7 +79,7 @@ export function TotalRespondenCard() {
                 </p>
               </div>
               
-              <div className={`flex-1 p-4 rounded-xl border flex flex-col justify-center ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+              <div className={`flex-1 p-4 rounded-xl border flex flex-col justify-center ${"bg-gray-50 border-gray-200"}`}>
                 <span className={`text-xs font-bold mb-2 flex items-center gap-1.5 ${textPrimary}`}>
                   <Users className="w-3.5 h-3.5 text-gray-500" /> Non-GAKIN
                 </span>

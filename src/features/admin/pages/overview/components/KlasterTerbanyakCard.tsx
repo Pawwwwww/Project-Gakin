@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Award, Info } from "lucide-react";
 import { motion } from "motion/react";
-import { useAdminTheme } from "../../../hooks/AdminThemeContext";
+import { useDashboardStats } from "../../../hooks/useDashboardStats";
 
 const CLUSTER_DESCRIPTIONS = [
   {
     name: "Klaster 1",
-    color: "bg-red-500/20 text-red-400 border-red-500/30",
+    color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     desc: "Kapasitas rendah. Responden pada klaster ini memiliki skor GRIT, TIPI, dan KWU yang rendah. Memerlukan intervensi menyeluruh untuk pengembangan potensi wirausaha.",
   },
   {
@@ -27,16 +27,15 @@ const CLUSTER_DESCRIPTIONS = [
 ];
 
 export function KlasterTerbanyakCard() {
-  const { isDark } = useAdminTheme();
   const [isFlipped, setIsFlipped] = useState(false);
+  const stats = useDashboardStats();
 
-  const cardBg = isDark ? "bg-white/5 border-white/10" : "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
-  const textPrimary = isDark ? "text-white" : "text-gray-900";
-  const textSecondary = isDark ? "text-gray-400" : "text-gray-600";
+  const cardBg = "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
+  const textPrimary = "text-gray-900";
+  const textSecondary = "text-gray-600";
 
-  const totalResponden = 1247;
-  const klaster2Count = 500;
-  const pct = Math.round((klaster2Count / totalResponden) * 100);
+  const totalResponden = stats.totalResponden || 1;
+  const pct = Math.round((stats.clusterCounts[stats.klasterTerbanyak - 1] / totalResponden) * 100) || 0;
 
   return (
     <motion.div
@@ -60,11 +59,11 @@ export function KlasterTerbanyakCard() {
               <Award className="w-10 h-10 drop-shadow-md" />
             </div>
             <h3 className={`text-base font-medium mb-1 ${textSecondary}`}>Klaster Terbanyak</h3>
-            <p className={`text-4xl md:text-5xl font-black tracking-tight drop-shadow-sm mb-3 ${textPrimary}`}>Klaster 2</p>
+            <p className={`text-4xl md:text-5xl font-black tracking-tight drop-shadow-sm mb-3 ${textPrimary}`}>Klaster {stats.klasterTerbanyak}</p>
             <p className={`text-sm font-medium ${textSecondary}`}>
               Mendominasi <span className="font-bold text-orange-500">{pct}%</span> dari total responden
             </p>
-            <div className={`mt-5 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full ${isDark ? "bg-white/10 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
+            <div className={`mt-5 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full ${"bg-gray-100 text-gray-500"}`}>
               <Info className="w-3.5 h-3.5" /> Klik untuk lihat deskripsi klaster
             </div>
           </div>
@@ -77,7 +76,7 @@ export function KlasterTerbanyakCard() {
             <h4 className={`text-sm font-bold mb-3 ${textPrimary}`}>Deskripsi Klaster</h4>
             <div className="space-y-2.5">
               {CLUSTER_DESCRIPTIONS.map((c, i) => (
-                <div key={i} className={`p-3 rounded-xl border flex gap-3 ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+                <div key={i} className={`p-3 rounded-xl border flex gap-3 ${"bg-gray-50 border-gray-200"}`}>
                   <span className={`shrink-0 text-xs font-bold w-16 mt-0.5 px-1.5 py-0.5 rounded-md text-center border ${c.color}`}>{c.name}</span>
                   <p className={`text-[11px] leading-relaxed ${textSecondary}`}>{c.desc}</p>
                 </div>

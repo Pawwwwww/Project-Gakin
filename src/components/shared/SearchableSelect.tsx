@@ -85,7 +85,7 @@ export function SearchableSelect({
           ${!value ? "text-gray-400" : "text-gray-900"}
           ${disabled ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}
           ${isOpen
-            ? "border-red-500 ring-2 ring-red-500"
+            ? "border-blue-500 ring-2 ring-blue-500"
             : "border-gray-300 hover:border-gray-400"
           }
         `}
@@ -125,7 +125,7 @@ export function SearchableSelect({
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none bg-white"
+                  className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   placeholder="Ketik untuk mencari..."
                 />
               </div>
@@ -148,8 +148,8 @@ export function SearchableSelect({
                     w-full text-left px-3 py-2.5 text-sm transition-colors
                     ${
                       option === value
-                        ? "bg-red-50 text-red-700 font-medium"
-                        : "text-gray-700 hover:bg-red-50 hover:text-red-700"
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                     }
                   `}
                 >

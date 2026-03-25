@@ -2,32 +2,32 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   LogOut, ClipboardList, User, ChevronRight,
-  CheckCircle, Info, Star, MapPin, Brain, Download
+  CheckCircle, Info, Star, MapPin, Brain
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { generateRaporPDF } from "../../../utils/pdfGenerator";
-import { KLUSTER_INFO, GRIT_QUESTIONS, KWU_ITEMS, TIPI_QUESTIONS } from "../../../entities/respondent";
+import { motion } from "framer-motion";
+import { KLUSTER_INFO } from "../../../entities/respondent";
 import { calcFullScore } from "../../../services/ScoringService";
 import { getCurrentUserNIK, getCurrentUserName, getKuesionerResult, logout, isLoggedIn, getCurrentRole, findUserByNIK, UserRecord, KuesionerSubmission } from "../../../services/StorageService";
-import Profile from "./Profile";
+import Profile from "../components/profile/Profile";
 import UserHeader from "../components/UserHeader";
+import { ConfirmModal } from "../../../components/shared/ConfirmModal";
 
 const INFO_ITEMS = [
   {
     icon: ClipboardList,
-    title: "Kuesioner Kemampuan Berkembang Maju dan Tangguh ",
-    desc: "Kuesioner Kemampuan Berkembang Maju dan Tangguh yang diselenggarakan BRIDA Surabaya.",
-    color: "text-red-600 bg-red-50",
+    title: "Kuesioner Kemampuan Berkembang Maju dan Kompetensi Wirausaha (MASIH HARUS REVISI)",
+    desc: "Kuesioner Kemampuan Berkembang Maju dan Kompetensi Wirausaha yang diselenggarakan BRIDA Surabaya.",
+    color: "text-blue-600 bg-blue-50",
   },
   {
     icon: Star,
-    title: "Hanya ±5–10 Menit",
+    title: "Hanya ±5–10 Menit (MASIH HARUS REVISI)",
     desc: "Kuesioner ini terdiri dari 3 bagian singkat yang mencakup beberapa pertanyaan mengenai ketekunan dalam mencapai tujuan (GRIT), kompetensi berwirausaha, dan pengukuran kepribadian singkat (TIPI).",
     color: "text-yellow-600 bg-yellow-50",
   },
   {
     icon: CheckCircle,
-    title: "Kontribusi Nyata",
+    title: "Kontribusi Nyata (MASIH HARUS REVISI)",
     desc: "Jawaban Anda membantu BRIDA merancang program inovasi yang tepat sasaran bagi masyarakat Surabaya.",
     color: "text-green-600 bg-green-50",
   },
@@ -48,7 +48,6 @@ export default function UserLanding() {
   
   const [completeUser, setCompleteUser] = useState<UserRecord | null>(null);
   const [kuesionerResult, setKuesionerResult] = useState<KuesionerSubmission | null>(null);
-  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn() || getCurrentRole() !== "user") {
@@ -89,19 +88,6 @@ export default function UserLanding() {
     navigate("/");
   };
 
-  const handleDownloadPDF = async () => {
-    if (!completeUser || !kuesionerResult || isDownloadingPDF) return;
-    try {
-      setIsDownloadingPDF(true);
-      console.log("Generating initial PDF for user:", completeUser.fullName);
-      await generateRaporPDF(completeUser, kuesionerResult);
-    } catch (error) {
-      console.error("Gagal membuat PDF", error);
-    } finally {
-      setIsDownloadingPDF(false);
-    }
-  };
-
   const displayName = userName || `Pengguna (NIK: ${userNIK})`;
   const shortNIK = userNIK
     ? userNIK.slice(0, 4) + "****" + userNIK.slice(-4)
@@ -124,12 +110,12 @@ export default function UserLanding() {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-gradient-to-br from-red-50 via-red-100 to-red-200 transition-colors duration-700 relative overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-gradient-to-br from-blue-50 via-slate-100 to-slate-200 transition-colors duration-700 relative overflow-hidden">
 
       {/* Background Blobs (Locked to background) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-red-300/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-red-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1.5s" }} />
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1.5s" }} />
         <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-white/20 rounded-full blur-3xl" />
       </div>
 
@@ -138,9 +124,9 @@ export default function UserLanding() {
         rightContent={(
           <button
             onClick={() => setIsLogoutOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors text-sm font-medium"
+            className="flex items-center gap-[6px] px-[12px] py-[8px] bg-white/10 hover:bg-white/20 text-white rounded-[8px] border border-white/20 transition-colors text-[14px] font-medium"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-[16px] h-[16px]" />
             <span className="hidden sm:inline">Logout</span>
           </button>
         )}
@@ -156,41 +142,44 @@ export default function UserLanding() {
         >
 
         {/* ── WELCOME BANNER ── */}
-        <motion.div variants={itemVariants} className="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl p-8 text-white relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-52 h-52 bg-white/5 rounded-full pointer-events-none" />
-          <div className="absolute -bottom-16 right-20 w-72 h-72 bg-white/5 rounded-full pointer-events-none" />
+        <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-800 to-blue-700 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-40 h-40 sm:w-52 sm:h-52 bg-white/5 rounded-full pointer-events-none" />
+          <div className="absolute -bottom-16 right-20 w-60 h-60 sm:w-72 sm:h-72 bg-white/5 rounded-full pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <User className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <p className="text-red-200 text-sm">Selamat datang,</p>
-              <h1 className="text-2xl font-bold">{displayName}</h1>
-              <div className="flex flex-wrap items-center gap-3 mt-3">
-                <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm font-medium">
-                  <User className="w-3.5 h-3.5" />
-                  NIK: {shortNIK}
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm font-medium">
-                  <MapPin className="w-3.5 h-3.5" />
-                  Kota Surabaya
-                </span>
-                {sudahIsi && (
-                  <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm font-medium">
-                    <CheckCircle className="w-3.5 h-3.5 text-white" />
-                    Kuesioner sudah diisi
+          <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-5">
+            <div className="flex items-center sm:items-start gap-4 sm:gap-5">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner border border-white/30">
+                <User className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+              </div>
+              <div>
+                <p className="text-blue-200 text-xs sm:text-sm font-medium mb-0.5">Selamat datang,</p>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-wide leading-tight">{displayName}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-3">
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm font-medium">
+                    <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    NIK: {shortNIK}
                   </span>
-                )}
-                <button
-                  onClick={() => setIsProfileOpen(true)}
-                  className="inline-flex items-center justify-center gap-1.5 text-xs px-4 py-1.5 rounded-full bg-white text-red-700 hover:bg-red-50 border border-transparent shadow-md shadow-red-900/10 font-bold transition-all hover:scale-105 active:scale-95 sm:ml-2"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  Profil Selengkapnya
-                </button>
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm font-medium">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    Kota Surabaya
+                  </span>
+                  {sudahIsi && (
+                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-green-500/20 backdrop-blur-md border border-green-400/30 text-green-100 shadow-sm font-bold">
+                      <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-300" />
+                      Kuesioner Diisi
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+
+            <button
+              onClick={() => setIsProfileOpen(true)}
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 text-[11px] sm:text-xs md:text-sm px-4 py-2.5 sm:py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/30 text-white shadow-lg font-semibold transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+            >
+              <User className="w-4 h-4" />
+              Lihat Profil
+            </button>
           </div>
         </motion.div>
 
@@ -198,23 +187,46 @@ export default function UserLanding() {
 
           {/* ── INFO CARDS ── */}
           <motion.div variants={itemVariants} className="lg:col-span-2 space-y-5">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1">
-                Kuesioner Kemampuan Berkembang Maju dan Tangguh 
-              </h2>
-              <p className="text-sm text-gray-500">
-                Layanan ini mengundang Anda untuk mengisi kuesioner singkat tentang kebutuhan masyarakat dan pelayanan publik tahun 2026.
-              </p>
+            {/* ── BRIDA STEP Intro Card ── */}
+            <div className="relative rounded-2xl border border-white/40 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl shadow-lg overflow-hidden">
+              {/* Decorative blobs */}
+              <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-blue-300/20 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="relative z-10 p-5 sm:p-6 space-y-3">
+                {/* Title */}
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-blue-900 tracking-tight leading-tight">
+                  <i>BRIDA STEP</i>
+                </h2>
+
+                {/* Tagline Bubble */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-700/10 border border-blue-400/30 rounded-full backdrop-blur-sm shadow-inner">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
+                  <p className="text-xs sm:text-sm font-semibold text-blue-800 italic">
+                    Riset Tepat, Inovasi Hebat, Masyarakat Berkarya, Ekonomi Berdaya
+                  </p>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-blue-300/50 to-transparent" />
+
+                {/* Description */}
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  <span className="font-semibold text-gray-800"><i>BRIDA-STEP (BRIDA Surabaya Talent Enterpreneural Path)</i></span> adalah platform{" "}
+                  <span className="italic text-blue-700">Diagnostic &amp; Intervention</span> pertama di Surabaya yang mengonversi hasil riset perilaku ekonomi menjadi panduan praktis bagi warga.
+                  {" "}Aplikasi ini menghilangkan sekat sosial, baik warga prasejahtera yang ingin memulai usaha kecil, maupun warga umum yang ingin naik kelas, akan mendapatkan perlakuan berbasis data yang sama adilnya.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-3">
               {INFO_ITEMS.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-4 flex items-start gap-4 transition-colors"
+                  className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-3 sm:p-4 flex items-start gap-3 sm:gap-4 transition-colors"
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${item.color} backdrop-blur-sm`}>
-                    <item.icon className="w-5 h-5" />
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${item.color} backdrop-blur-sm`}>
+                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{item.title}</p>
@@ -237,8 +249,8 @@ export default function UserLanding() {
           {/* ── SIDE CTA ── */}
           <motion.div variants={itemVariants} className="space-y-4">
             {/* Status card */}
-            <div className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-5 transition-colors">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Status Kuesioner</h3>
+            <div className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-4 sm:p-5 transition-colors">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Status Kuesioner</h3>
 
               {sudahIsi ? (
                 <div className="text-center py-4">
@@ -250,8 +262,8 @@ export default function UserLanding() {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <ClipboardList className="w-6 h-6 text-red-600" />
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <ClipboardList className="w-6 h-6 text-blue-600" />
                   </div>
                   <p className="text-sm font-semibold text-gray-900">Belum Diisi</p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -262,7 +274,7 @@ export default function UserLanding() {
 
               <button
                 onClick={() => navigate("/kuesioner")}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-red-700 hover:bg-red-800 text-white rounded-xl font-semibold transition-colors shadow-md mt-3"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-semibold transition-colors shadow-md mt-3"
               >
                 <ClipboardList className="w-4 h-4" />
                 {sudahIsi ? "Lihat Hasil Pengerjaan" : "Mulai Kuesioner"}
@@ -271,10 +283,10 @@ export default function UserLanding() {
             </div>
 
             {/* Hasil Kuesioner (Pengganti Partisipasi Masyarakat) */}
-            <div className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-5 relative overflow-hidden transition-colors">
+            <div className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-4 sm:p-5 relative overflow-hidden transition-colors">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2 relative z-10">
-                <Brain className="w-5 h-5 text-red-600" /> Hasil Pengerjaan Kuesioner Anda
+              <h3 className="text-sm font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2 relative z-10">
+                <Brain className="w-5 h-5 text-blue-600" /> Hasil Pengerjaan Kuesioner Anda
               </h3>
 
               {sudahIsi && userKluster ? (
@@ -283,31 +295,16 @@ export default function UserLanding() {
                     <h4 className={`text-lg font-bold ${KLUSTER_INFO[userKluster].color} mb-2 leading-tight`}>
                       {KLUSTER_INFO[userKluster].subtitle}
                     </h4>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-white/70 text-gray-800 border border-gray-200/50 shadow-sm backdrop-blur-sm">
-                        GRIT: {userGrit}
-                      </span>
-                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-white/70 text-gray-800 border border-gray-200/50 shadow-sm backdrop-blur-sm">
-                        KWU: {userKwu}
-                      </span>
-                    </div>
                     <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
                       {KLUSTER_INFO[userKluster].desc}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="grid grid-cols-1 gap-2 mt-3">
                     <button
                       onClick={() => navigate("/kuesioner")}
-                      className="flex items-center justify-center gap-1.5 py-2.5 bg-white/60 hover:bg-white/90 text-red-700 border border-red-200 rounded-lg font-semibold transition-colors shadow-sm text-xs"
+                      className="flex items-center justify-center gap-1.5 py-2.5 bg-white/60 hover:bg-white/90 text-blue-700 border border-blue-200 rounded-lg font-semibold transition-colors shadow-sm text-xs"
                     >
                       Baca Selengkapnya
-                    </button>
-                    <button
-                      onClick={handleDownloadPDF}
-                      disabled={isDownloadingPDF}
-                      className="flex items-center justify-center gap-1.5 py-2.5 bg-red-700 hover:bg-red-800 text-white border border-red-800 rounded-lg font-semibold transition-colors shadow-sm text-xs disabled:opacity-70"
-                    >
-                      {isDownloadingPDF ? "Memproses..." : "Unduh Rapor PDF"}
                     </button>
                   </div>
                 </div>
@@ -332,55 +329,15 @@ export default function UserLanding() {
     <Profile isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
 
     {/* Logout Confirmation Modal */}
-    <AnimatePresence>
-      {isLogoutOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        >
-          {/* Backdrop WITHOUT blur, just dark translucent */}
-          <div className="absolute inset-0 bg-black/60" onClick={() => setIsLogoutOpen(false)} />
-
-          {/* Modal Card - Liquid Glass */}
-          <motion.div
-            initial={{ scale: 0.8, y: 30, opacity: 0, rotateX: 10, filter: "blur(4px)" }}
-            animate={{ scale: 1, y: 0, opacity: 1, rotateX: 0, filter: "blur(0px)" }}
-            exit={{ scale: 0.8, y: 30, opacity: 0, rotateX: -10, filter: "blur(4px)" }}
-            transition={{ type: "spring", stiffness: 400, damping: 25, mass: 0.8 }}
-            className="relative w-full max-w-sm bg-white/5 backdrop-blur-md border border-white/20 shadow-2xl rounded-3xl p-6 sm:p-8 text-center overflow-hidden"
-          >
-            {/* Glossy overlay effect */}
-            <div className="absolute inset-x-0 -top-20 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-5 border border-red-500/30 shadow-inner">
-              <LogOut className="w-8 h-8 text-red-200" />
-            </div>
-            
-            <h2 className="text-xl font-bold text-white mb-2">Keluar Aplikasi?</h2>
-            <p className="text-sm text-red-100/80 mb-8 leading-relaxed">
-              Anda akan mengakhiri sesi saat ini. Apakah Anda yakin ingin keluar dari portal dashboard?
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <button
-                onClick={() => setIsLogoutOpen(false)}
-                className="w-full px-4 py-2.5 rounded-xl font-semibold text-gray-200 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600/90 hover:bg-red-500 shadow-lg shadow-red-600/30 border border-red-500/50 transition-all hover:scale-[1.03] active:scale-[0.97]"
-              >
-                Ya, Keluar
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <ConfirmModal
+      isOpen={isLogoutOpen}
+      onClose={() => setIsLogoutOpen(false)}
+      onConfirm={handleLogout}
+      icon={LogOut}
+      title="Keluar Aplikasi?"
+      message="Anda akan mengakhiri sesi saat ini. Apakah Anda yakin ingin keluar dari portal dashboard?"
+      confirmLabel="Ya, Keluar"
+    />
 
     </div>
   );

@@ -60,7 +60,7 @@ export function GlassDatePicker({ value, onChange, required }: GlassDatePickerPr
   const triggerClass = `
     block w-full text-left py-2.5 px-3 border rounded-lg transition-colors text-sm
     border-white/50 bg-white/50 backdrop-blur-md focus:outline-none
-    focus:border-red-500 focus:ring-2 focus:ring-red-500
+    focus:border-blue-500 focus:ring-2 focus:ring-blue-500
     appearance-none
   `;
 
