@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router";
 import { getDataItems, type DataItem } from "../../../../data/mockRespondents";
 import { deleteUser, updateUser, saveUser, findUserByNIK } from "../../../../services/StorageService";
-import { MOCK_USERS } from "../../../../data/mockData";
+import { MOCK_USERS, getMergedUsers } from "../../../../data/mockData";
 import { AddDataModal } from "./components/AddDataModal";
 
 function toTitleCase(str: string): string {
@@ -217,7 +217,7 @@ export default function AdminData() {
       updateUser(itemToDelete.nik, { gakinStatus: "Non-GAKIN" });
     } else {
       // Find from static mock data and save to localStorage as Non-GAKIN
-      const mockUser = MOCK_USERS.find(u => u.nik === itemToDelete.nik);
+      const mockUser = getMergedUsers().find(u => u.nik === itemToDelete.nik);
       if (mockUser) {
         saveUser({ ...mockUser, gakinStatus: "Non-GAKIN" });
       }

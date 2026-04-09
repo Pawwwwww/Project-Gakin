@@ -1,5 +1,6 @@
-import { MOCK_USERS } from "./mockData";
+import { MOCK_USERS, getMergedUsers } from "./mockData";
 import { getUsers } from "../services/StorageService";
+import { isDummyNIK } from "../services/DummyDataService";
 
 function calcAge(tanggalLahir: string): number {
   if (!tanggalLahir) return 30;
@@ -11,9 +12,10 @@ function calcAge(tanggalLahir: string): number {
 }
 
 export function getDataItems() {
-  // GAKIN dari MOCK_USERS (static mock data)
+  // GAKIN dari hardcoded + dummy users
+  const allMergedUsers = getMergedUsers();
   const gakinNiks = new Set<string>();
-  const gakinItems = MOCK_USERS
+  const gakinItems = allMergedUsers
     .filter(u => u.gakinStatus === "GAKIN")
     .map((u, i) => {
       gakinNiks.add(u.nik);

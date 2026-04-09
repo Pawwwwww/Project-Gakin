@@ -109,6 +109,8 @@ export function AddDataModal({ isOpen, onClose, onDataAdded, origin }: AddDataMo
     e.preventDefault();
     if (!dispendukData) return;
     if (!phone) { setError("No. Telepon wajib diisi."); return; }
+    if (phone.length > 14) { setError("No. Telepon maksimal 14 digit."); return; }
+    if (!/^\d+$/.test(phone)) { setError("No. Telepon hanya boleh berisi angka."); return; }
 
     // Save as GAKIN user to localStorage so they can login immediately
     const newUser: UserRecord = {
@@ -303,9 +305,9 @@ export function AddDataModal({ isOpen, onClose, onDataAdded, origin }: AddDataMo
                           </h3>
                           <div className="space-y-3">
                             <div>
-                              <label className={labelClass}>No. Telepon <span className="text-blue-400">*</span></label>
-                              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                                placeholder="08xxxxxxxxxx" className={inputClass} />
+                              <label className={labelClass}>No. Telepon <span className="text-blue-400">*</span> <span className="text-[10px] text-blue-200/40 ml-1">(maks. 14 digit)</span></label>
+                              <input type="tel" value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 14))}
+                                placeholder="08xxxxxxxxxx" className={inputClass} maxLength={14} />
                             </div>
                             <div className="grid grid-cols-3 gap-3">
                               <div>

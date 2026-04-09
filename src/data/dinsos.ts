@@ -1,4 +1,4 @@
-import { MOCK_USERS } from "./mockData";
+import { MOCK_USERS, getMergedUsers } from "./mockData";
 import { UserRecord } from "../services/StorageService";
 
 export type DinsosRecord = UserRecord & { status: "GAKIN" };
@@ -13,7 +13,11 @@ export const MOCK_DINSOS_DB: DinsosRecord[] = MOCK_USERS
 export async function checkDinsosData(nik: string): Promise<DinsosRecord | null> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const found = MOCK_DINSOS_DB.find(record => record.nik === nik);
+      // Search in both static + dummy data
+      const allGakin = getMergedUsers()
+        .filter(u => u.gakinStatus === "GAKIN")
+        .map(u => ({ ...u, status: "GAKIN" as const }));
+      const found = allGakin.find(record => record.nik === nik);
       resolve(found || null);
     }, 400); 
   });

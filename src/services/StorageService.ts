@@ -211,12 +211,17 @@ export function isOPDRole(): boolean {
 }
 
 import { MOCK_USERS, MOCK_RESULTS } from '../data/mockData';
+import { seedInitialDummies, getDummyResults } from '../services/DummyDataService';
 
-const SEED_VERSION = 'excel_v4_auth_fix'; // bump this to force re-seed
+const SEED_VERSION = 'excel_v7_no_prefill'; // bump this to force re-seed
 
 export function seedDummyUser(): void {
   const currentVersion = localStorage.getItem('seed_version');
-  if (currentVersion === SEED_VERSION) return; // already seeded with this version
+  if (currentVersion === SEED_VERSION) {
+    // Even if already seeded, ensure dummy data exists
+    seedInitialDummies();
+    return;
+  }
 
   // Get existing users from localStorage (to preserve manually-added users)
   const existingUsers = getUsers();
@@ -229,13 +234,16 @@ export function seedDummyUser(): void {
   const mergedUsers = [...existingUsers, ...gakinToAdd];
   localStorage.setItem(KEYS.USERS, JSON.stringify(mergedUsers));
 
-  // Seed kuesioner results
+  // Seed kuesioner results from hardcoded data
   const allResults: KuesionerSubmission[] = [];
   for (const r of MOCK_RESULTS) {
     localStorage.setItem(KEYS.KUESIONER_DONE(r.nik), JSON.stringify(r));
     allResults.push(r);
   }
   localStorage.setItem(KEYS.KUESIONER_ALL, JSON.stringify(allResults));
+
+  // Seed initial 40 dummy responden (this now also injects into main `users` + `kuesioner_results`)
+  seedInitialDummies();
 
   localStorage.setItem('seed_version', SEED_VERSION);
 }

@@ -7,6 +7,7 @@
 
 import { UserRecord, KuesionerSubmission } from "../services/StorageService";
 import { KuesionerData } from "../entities/respondent";
+import { getDummyUsers, getDummyResults } from "../services/DummyDataService";
 
 // ── Known admin/test users ──
 export const KNOWN_USERS = [
@@ -945,3 +946,12 @@ export const MOCK_RESULTS: KuesionerSubmission[] = [
   {"nik":"3575576481400002","nama":"FX EDI SANTOSO","tanggal":"2025-01-13T06:52:28.330Z","data":{"consent":true,"grit":{"1":4,"2":4,"3":4,"4":2,"5":4,"6":2,"7":3,"8":4,"9":3,"10":2,"11":3,"12":3},"kwu":{"1":2,"2":2,"3":1,"4":2,"5":1,"6":2,"7":1,"8":1,"9":1,"10":1,"11":1,"12":2,"13":2,"14":1,"15":2},"tipi":{"1":4,"2":5,"3":4,"4":4,"5":4,"6":3,"7":4,"8":5,"9":4,"10":4}}} as KuesionerSubmission,
   {"nik":"3579825568890001","nama":"BAMBANG PIKUKUH","tanggal":"2025-01-12T06:52:28.330Z","data":{"consent":true,"grit":{"1":3,"2":4,"3":5,"4":4,"5":5,"6":1,"7":5,"8":5,"9":2,"10":1,"11":5,"12":5},"kwu":{"1":1,"2":1,"3":1,"4":1,"5":1,"6":2,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":2,"15":2},"tipi":{"1":4,"2":4,"3":5,"4":4,"5":5,"6":4,"7":3,"8":6,"9":2,"10":3}}} as KuesionerSubmission,
 ];
+
+// ── Merged exports (static hardcoded + dynamic dummy data) ──
+export function getMergedUsers(): UserRecord[] {
+  return [...MOCK_USERS, ...getDummyUsers()];
+}
+
+export function getMergedResults(): KuesionerSubmission[] {
+  return [...MOCK_RESULTS, ...getDummyResults()];
+}

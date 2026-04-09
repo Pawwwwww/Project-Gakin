@@ -5,7 +5,7 @@ import { AdminLayout } from "../../components/AdminLayout";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, User, Home, BookOpen, Briefcase, Edit3, X, CheckCircle, Save, AlertTriangle, AlertCircle, ChevronDown } from "lucide-react";
 import { findUserByNIK, updateUser, saveUser } from "../../../../services/StorageService";
-import { MOCK_USERS } from "../../../../data/mockData";
+import { MOCK_USERS, getMergedUsers } from "../../../../data/mockData";
 
 function toTitleCase(str: string): string {
   if (!str) return str;
@@ -82,7 +82,7 @@ export default function RespondentDetail() {
   // ── Load respondent data (refreshable) ──
   const loadRespondent = useCallback(() => {
     const storageUser = findUserByNIK(id || "");
-    const mockUser = !storageUser ? MOCK_USERS.find(u => u.nik === id) : null;
+    const mockUser = !storageUser ? getMergedUsers().find(u => u.nik === id) : null;
     const raw = storageUser
       ? { ...storageUser, type: (storageUser.gakinStatus || "GAKIN") as string }
       : mockUser
@@ -261,7 +261,7 @@ export default function RespondentDetail() {
     if (existingUser) {
       updateUser(respondent.nik, payload);
     } else {
-      const mockUser = MOCK_USERS.find(u => u.nik === respondent.nik);
+      const mockUser = getMergedUsers().find(u => u.nik === respondent.nik);
       if (mockUser) {
         saveUser({ ...mockUser, ...payload });
       }
@@ -371,7 +371,7 @@ export default function RespondentDetail() {
                               {["Laki-laki", "Perempuan"].map(opt => <option key={opt} value={opt} className="bg-gray-900">{opt}</option>)}
                             </select>
                           </div>
-                          <div><label className={labelClass}>No. Telepon</label><input type="tel" value={editForm.phone || ""} onChange={e => handleEditChange("phone", e.target.value)} className={inputClass} /></div>
+                          <div><label className={labelClass}>No. Telepon <span className="text-[10px] text-white/40">(maks. 14)</span></label><input type="tel" value={editForm.phone || ""} onChange={e => handleEditChange("phone", e.target.value.replace(/\D/g, '').slice(0, 14))} className={inputClass} maxLength={14} /></div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div><label className={labelClass}>Tempat Lahir <span className="text-red-400">*</span></label><input type="text" value={editForm.tempatLahir || ""} onChange={e => handleEditChange("tempatLahir", e.target.value)} className={inputClass} /></div>

@@ -6,7 +6,7 @@ import {
   ClipboardCheck, Search, Plus, Pencil, Trash2, X, Check, AlertCircle, Building2,
   Tag, FileText, Layers, MapPin, CalendarDays, CheckCircle2, History, Sparkles, ChevronDown
 } from "lucide-react";
-import { MOCK_USERS, MOCK_RESULTS } from "../../../../data/mockData";
+import { getMergedUsers, getMergedResults } from "../../../../data/mockData";
 import { calcFullScore } from "../../../../services/ScoringService";
 import { isOPDRole, getCurrentOPDName, getCurrentOPDKlasters } from "../../../../services/StorageService";
 import {
@@ -36,9 +36,11 @@ export default function TindakLanjut() {
 
   // ── Respondent data ─────────────────────────────────────
   const rows: Row[] = useMemo(() => {
-    const resultMap = new Map(MOCK_RESULTS.map(r => [r.nik, r]));
+    const allUsers = getMergedUsers();
+    const allResults = getMergedResults();
+    const resultMap = new Map(allResults.map(r => [r.nik, r]));
     const out: Row[] = [];
-    for (const u of MOCK_USERS) {
+    for (const u of allUsers) {
       if (u.gakinStatus !== "GAKIN") continue;
       const res = resultMap.get(u.nik);
       if (!res) continue;

@@ -22,7 +22,7 @@ import { ADMIN_ACCOUNTS } from "../entities/admin";
 import { findUserByNIK, seedDummyUser, saveUser } from "./StorageService";
 import { MOCK_DINSOS_DB } from "../data/dinsos";
 import { MOCK_DISPENDUK_DB } from "../data/dispendukcapil";
-import { MOCK_USERS } from "../data/mockData";
+import { MOCK_USERS, getMergedUsers } from "../data/mockData";
 
 export interface AuthResult {
   success: boolean;
@@ -48,8 +48,8 @@ export function loginUser(nik: string): AuthResult {
   let found = findUserByNIK(nikVal);
 
   if (!found) {
-    // ── STEP 2: Cek MOCK_USERS — apakah NIK ada di data hardcoded? ──
-    const mockHit = MOCK_USERS.find(u => u.nik === nikVal);
+    // ── STEP 2: Cek MOCK_USERS + Dummy — apakah NIK ada di data? ──
+    const mockHit = getMergedUsers().find(u => u.nik === nikVal);
 
     if (mockHit) {
       if (mockHit.gakinStatus === "GAKIN") {

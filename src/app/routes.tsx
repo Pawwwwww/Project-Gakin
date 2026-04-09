@@ -24,6 +24,7 @@ import RespondentDetail    from "../features/admin/pages/data-management/Respond
 import RespondentScoreDetail from "../features/admin/pages/data-management/RespondentScoreDetail";
 import StatusKuesioner     from "../features/admin/pages/data-management/StatusKuesioner";
 import TindakLanjut        from "../features/admin/pages/data-management/TindakLanjut";
+import DummyManager        from "../features/admin/pages/data-management/DummyManager";
 
 function RootWrapper() {
   return (
@@ -71,6 +72,7 @@ export const router = createBrowserRouter([
           { path: "respondent-score/:id",         Component: RespondentScoreDetail },
           { path: "status-kuesioner",             Component: StatusKuesioner     },
           { path: "tindak-lanjut",                Component: TindakLanjut        },
+          { path: "dummy-manager",                Component: DummyManager        },
         ]
       }
     ],

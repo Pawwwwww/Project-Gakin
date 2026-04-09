@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   Menu, X, LayoutDashboard, FileText, User, LogOut,
-  Users, BarChart3, Database, Shield, Layers, AlertCircle, ChevronRight, Lock, Key, Check, ClipboardCheck
+  Users, BarChart3, Database, Shield, Layers, AlertCircle, ChevronRight, Lock, Key, Check, ClipboardCheck, TestTube2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { getCurrentUserName, getCurrentRole, isLoggedIn, logout, isOPDRole, getCurrentOPDName } from "../../../services/StorageService";
@@ -36,6 +36,7 @@ const MENU_SECTIONS: MenuSection[] = [
       { label: "Status Kuesioner", icon: FileText, path: "/admin/status-kuesioner" },
       { label: "Data Responden", icon: Users, path: "/admin/respondent-management" },
       { label: "Tindak Lanjut", icon: ClipboardCheck, path: "/admin/tindak-lanjut" },
+      { label: "Kelola Dummy", icon: TestTube2, path: "/admin/dummy-manager" },
     ],
   },
 ];

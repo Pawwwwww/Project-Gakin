@@ -163,7 +163,10 @@ export default function Respondent() {
   let filteredData = allItems.filter(item => {
     const matchesSearch = item.nama.toLowerCase().includes(searchTerm.toLowerCase()) || item.nik.includes(searchTerm);
     if (!matchesSearch) return false;
-    if (item.klaster === null) return false;
+    
+    // Jika melihat spesifik klaster, maka sembunyikan yang belum isi kuesioner
+    if (activeKlasterTab !== "Keseluruhan" && item.klaster === null) return false;
+    
     if (activeKlasterTab === "Klaster 1" && item.klaster !== 1) return false;
     if (activeKlasterTab === "Klaster 2" && item.klaster !== 2) return false;
     if (activeKlasterTab === "Klaster 3" && item.klaster !== 3) return false;

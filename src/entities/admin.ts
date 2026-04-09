@@ -18,7 +18,8 @@ export interface AdminAccount {
 // Daftar akun admin + OPD — sesuaikan sesuai kebutuhan
 export const ADMIN_ACCOUNTS: AdminAccount[] = [
   // ── Admin Utama ──
-  { username: "admin.web", password: "admin", role: "admin_web", name: "Admin Web", kecamatan: null },
+  { username: "admin.web",        password: "admin",            role: "admin_web", name: "Admin Web",          kecamatan: null },
+  { username: "psikologi.unair",  password: "psikologixbrida",  role: "admin_web", name: "Psikologi UNAIR",    kecamatan: null },
 
   // ── OPD Accounts ──
   {
