@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Search, Database, Users, ChevronDown, CheckCircle, SlidersHorizontal, ArrowUpDown, Filter, Check, MapPin, RotateCcw, AlertTriangle, X } from "lucide-react";
 import { AdminLayout } from "../../components/AdminLayout";
 import { motion, AnimatePresence } from "motion/react";
@@ -89,19 +90,19 @@ const ROWS_OPTIONS = [10, 25, 50];
 
 type ColumnKey = "nama" | "nik" | "kecamatan" | "kelurahan" | "alamatKtp" | "type" | "usia" | "jenisKelamin" | "phone" | "pendidikan" | "agama" | "bidangUsaha" | "klaster";
 const ALL_COLUMNS: { key: ColumnKey; label: string; sortable?: boolean }[] = [
-  { key: "nama", label: "Nama Lengkap" },
+  { key: "nama", label: "Nama Lengkap", sortable: true },
   { key: "nik", label: "NIK", sortable: true },
-  { key: "type", label: "Tipe Data", sortable: true },
-  { key: "usia", label: "Usia", sortable: true },
+  { key: "type", label: "Tipe Data" },
+  { key: "usia", label: "Usia" },
   { key: "jenisKelamin", label: "Jenis Kelamin" },
-  { key: "kecamatan", label: "Kecamatan", sortable: true },
-  { key: "kelurahan", label: "Kelurahan", sortable: true },
+  { key: "kecamatan", label: "Kecamatan" },
+  { key: "kelurahan", label: "Kelurahan" },
   { key: "alamatKtp", label: "Alamat KTP" },
   { key: "phone", label: "No. Telepon" },
   { key: "pendidikan", label: "Pendidikan" },
   { key: "agama", label: "Agama" },
   { key: "bidangUsaha", label: "Bidang Usaha" },
-  { key: "klaster", label: "Skor Klaster", sortable: true },
+  { key: "klaster", label: "Skor Klaster" },
 ];
 
 const DEFAULT_VISIBLE = new Set<ColumnKey>(["nama", "nik", "kecamatan", "type", "phone", "bidangUsaha", "klaster"]);
@@ -124,6 +125,9 @@ export default function Respondent() {
   const [visibleColsSet, setVisibleColsSet] = useState<Set<ColumnKey>>(new Set(DEFAULT_VISIBLE));
   const [showColDropdown, setShowColDropdown] = useState(false);
   const colDropdownRef = useRef<HTMLDivElement>(null);
+  const [showRowsDropdown, setShowRowsDropdown] = useState(false);
+  const rowsDropdownRef = useRef<HTMLDivElement>(null);
+  const rowsBtnRef = useRef<HTMLButtonElement>(null);
 
   const triggerAlert = (msg: string) => {
     setAlertMsg(msg); setShowSuccessAlert(true); setIsAlertExiting(false);
@@ -144,8 +148,12 @@ export default function Respondent() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (colDropdownRef.current && !colDropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (colDropdownRef.current && !colDropdownRef.current.contains(target)) {
         setShowColDropdown(false);
+      }
+      if (rowsBtnRef.current && !rowsBtnRef.current.contains(target) && (!rowsDropdownRef.current || !rowsDropdownRef.current.contains(target))) {
+        setShowRowsDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -187,7 +195,19 @@ export default function Respondent() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + rowsPerPage);
   
-  const getPageNumbers = () => { const p: number[] = []; for (let i = 1; i <= totalPages; i++) p.push(i); return p; };
+  // Smart ellipsis pagination
+  const getPageNumbers = (): (number | "...")[] => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const delta = 1;
+    const range: number[] = [];
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) range.push(i);
+    const items: (number | "...")[] = [1];
+    if (range[0] > 2) items.push("...");
+    items.push(...range);
+    if (range[range.length - 1] < totalPages - 1) items.push("...");
+    items.push(totalPages);
+    return items;
+  };
 
   const handleKlasterTabChange = (tab: FilterKlasterTab) => { setActiveKlasterTab(tab); setCurrentPage(1); setAnimKey(k => k + 1); };
   const handleRowsChange = (val: number) => { setRowsPerPage(val); setCurrentPage(1); };
@@ -203,6 +223,12 @@ export default function Respondent() {
       next.has(col) ? next.delete(col) : next.add(col);
       return next;
     });
+  };
+
+  const getDropdownPos = (ref: React.RefObject<HTMLButtonElement | null>) => {
+    if (!ref.current) return { top: 0, left: 0 };
+    const rect = ref.current.getBoundingClientRect();
+    return { top: rect.bottom + 8, left: rect.left };
   };
 
   // ── THEME CLASSES ──
@@ -264,7 +290,7 @@ export default function Respondent() {
       case "kecamatan": return <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className={textSecondary}>{item.kecamatan}</span></div>;
       case "kelurahan": return <span className={textSecondary}>{item.kelurahan}</span>;
       case "alamatKtp": return <span className={`truncate max-w-[150px] inline-block ${textSecondary}`} title={item.alamatKtp}>{item.alamatKtp || "-"}</span>;
-      case "type": return <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border backdrop-blur-sm shadow-sm ${item.type === "GAKIN" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}>{item.type}</span>;
+      case "type": return <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border backdrop-blur-sm shadow-sm whitespace-nowrap inline-block ${item.type === "GAKIN" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}>{item.type}</span>;
       case "usia": return <span className={textSecondary}>{item.usia ? `${item.usia} thn` : "-"}</span>;
       case "jenisKelamin": return <span className={textSecondary}>{item.jenisKelamin || "-"}</span>;
       case "phone": return <span className={textSecondary}>{item.phone || "-"}</span>;
@@ -307,13 +333,13 @@ export default function Respondent() {
 
       {/* ── KLASTER FILTER TABS + COLUMN TOGGLE ── */}
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className={`shadow-sm backdrop-blur-md rounded-xl p-1.5 flex items-center gap-1 border ${bgCard}`}>
+        <div className="shadow-sm backdrop-blur-xl rounded-xl p-1.5 flex items-center gap-1 border bg-white/80 border-gray-200">
           <Users className={`w-4 h-4 mx-2 ${textSecondary}`} />
           {KLASTER_OPTIONS.map((opt) => (
             <button key={opt.key} onClick={() => handleKlasterTabChange(opt.key)}
-              className={`relative px-5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${activeKlasterTab === opt.key ? ("text-gray-900") : "text-gray-500 hover:text-blue-500"}`}>
+              className={`relative px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-300 ${activeKlasterTab === opt.key ? "text-blue-600" : "text-gray-500 hover:text-blue-600"}`}>
               {activeKlasterTab === opt.key && (
-                <motion.div layoutId="active-respondent-filter" className={`absolute inset-0 rounded-lg ${"bg-gray-100"}`}
+                <motion.div layoutId="active-respondent-filter" className="absolute inset-0 rounded-lg bg-blue-500/15 border border-blue-500/20 shadow-sm backdrop-blur-md"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }} />
               )}
               <span className="relative z-10">{opt.label}</span>
@@ -368,13 +394,13 @@ export default function Respondent() {
         className={`shadow-sm backdrop-blur-xl rounded-2xl border overflow-hidden ${bgTableCard}`}>
         <div className="overflow-x-auto dark-scrollbar pb-2">
           <table className="w-full text-left border-collapse min-w-[800px]">
-            <thead className={`uppercase font-semibold text-[11px] tracking-wider ${tableHeader}`}>
+            <thead className={`font-semibold text-[13px] ${tableHeader}`}>
               <tr>
                 <th className="px-6 py-4 w-16">No</th>
                 {ALL_COLUMNS.filter(c => visibleColsSet.has(c.key)).map(col => (
                   <th key={col.key} className="px-6 py-4">
                     {col.sortable ? (
-                      <button onClick={() => handleSort(col.key)} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors group">
+                      <button onClick={() => handleSort(col.key)} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors group text-inherit font-inherit">
                         {col.label}
                         <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === col.key ? 'text-blue-500' : 'text-gray-500 group-hover:text-blue-400'}`} />
                       </button>
@@ -411,31 +437,44 @@ export default function Respondent() {
           </table>
         </div>
 
+        {showRowsDropdown && (
+          <div ref={rowsDropdownRef} className="fixed z-[200] w-24 bg-white/95 backdrop-blur-2xl border border-gray-200 rounded-2xl shadow-2xl shadow-gray-300/40 py-2" style={{ top: getDropdownPos(rowsBtnRef).top - 170, left: getDropdownPos(rowsBtnRef).left }}>
+            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 mb-1">Rows</p>
+            {ROWS_OPTIONS.map(n => (
+              <button key={n} onClick={() => { handleRowsChange(n); setShowRowsDropdown(false); }} className={`w-full text-left px-4 py-2 text-sm transition-all flex items-center justify-between ${rowsPerPage === n ? "text-blue-600 bg-blue-50 font-bold" : "text-gray-700 hover:bg-gray-50"}`}>
+                {n}
+                {rowsPerPage === n && <Check className="w-3.5 h-3.5 text-blue-600" />}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* ── PAGINATION ── */}
         <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t ${borderCol}`}>
           <div className="flex items-center gap-3">
             <span className={`text-sm font-medium ${textSecondary}`}>Rows</span>
-            <div className="relative">
-              <select value={rowsPerPage} onChange={(e) => handleRowsChange(Number(e.target.value))}
-                className={`appearance-none shadow-sm backdrop-blur-md border text-sm font-semibold rounded-lg px-4 py-2 pr-8 cursor-pointer transition-all outline-none focus:ring-1 focus:ring-blue-500/50 ${btnOutline}`}>
-                {ROWS_OPTIONS.map(o => <option key={o} value={o} className={"bg-white text-gray-900"}>{o}</option>)}
-              </select>
-              <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${textSecondary}`} />
-            </div>
+            <button ref={rowsBtnRef} onClick={(e) => { e.stopPropagation(); setShowRowsDropdown(!showRowsDropdown); }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-white text-gray-700 shadow-sm border border-gray-300 hover:bg-gray-50 transition-all`}>
+              {rowsPerPage} <ChevronDown className="w-4 h-4 text-gray-500" />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); setAnimKey(k => k + 1); }} disabled={currentPage === 1}
               className={`px-3 py-2 text-sm font-medium rounded-lg border shadow-sm backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed ${btnOutline}`}>
               Previous
             </button>
             <div className="hidden sm:flex items-center gap-1">
-              {getPageNumbers().map(num => (
-                <button key={num} onClick={() => { setCurrentPage(num); setAnimKey(k => k + 1); }}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
-                    currentPage === num ? "bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20" : btnOutline
-                  }`}>{num}</button>
-              ))}
+              {getPageNumbers().map((num, idx) =>
+                num === "..." ? (
+                  <span key={`ellipsis-${idx}`} className={`w-9 h-9 flex items-center justify-center text-sm font-medium select-none ${textSecondary}`}>…</span>
+                ) : (
+                  <button key={num} onClick={() => { setCurrentPage(num); setAnimKey(k => k + 1); }}
+                    className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
+                      currentPage === num ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25" : btnOutline
+                    }`}>{num}</button>
+                )
+              )}
             </div>
             <span className={`sm:hidden text-sm font-medium px-2 ${textSecondary}`}>
               {currentPage} / {totalPages}
@@ -449,23 +488,38 @@ export default function Respondent() {
       </motion.div>
       
       {/* ═══ RESET ALL MODAL ═══ */}
-      <AnimatePresence>
-        {showResetAllModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute -inset-10 bg-black/60 backdrop-blur-md" onClick={() => setShowResetAllModal(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} 
-              className={`w-full max-w-md relative z-10 shadow-sm backdrop-blur-2xl border rounded-2xl p-6 shadow-2xl text-center ${"bg-white border-gray-200"}`}>
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7 text-purple-500" /></div>
-              <h3 className={`text-lg font-bold mb-2 ${textPrimary}`}>Reset Seluruh Kuesioner?</h3>
-              <p className={`text-sm mb-6 ${textSecondary}`}>Semua data terkait <strong>kuesioner baterai dan klaster</strong> akan dihapus dari seluruh responden. Data subjek asalnya akan tetap ada. Tindakan ini tidak dapat dibatalkan.</p>
-              <div className="flex gap-3 justify-center">
-                <button onClick={() => setShowResetAllModal(false)} className={`px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm border transition-all ${btnOutline}`}>Batal</button>
-                <button onClick={handleResetAll} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 border border-purple-500/50 shadow-lg shadow-purple-900/20 transition-all flex items-center gap-2"><RotateCcw className="w-4 h-4" /> Reset Semua</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {showResetAllModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute -inset-10 bg-black/60 backdrop-blur-md" onClick={() => setShowResetAllModal(false)} />
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} 
+                className="w-full max-w-md relative z-10 shadow-2xl backdrop-blur-md border rounded-3xl p-6 text-center bg-white/5 border-white/20 overflow-hidden"
+              >
+                <div className="absolute inset-x-0 -top-20 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center mx-auto mb-4 shadow-inner">
+                  <AlertTriangle className="w-8 h-8 text-purple-300" />
+                </div>
+                <h3 className="text-lg font-bold mb-2 text-white">Reset Seluruh Kuesioner?</h3>
+                <p className="text-[13px] text-blue-100/80 mb-6 leading-relaxed">
+                  Semua data terkait <strong>kuesioner baterai dan klaster</strong> akan dihapus dari seluruh responden. Data subjek asalnya akan tetap ada. Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button onClick={() => setShowResetAllModal(false)} 
+                    className="px-5 py-2.5 rounded-xl font-semibold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm">
+                    Batal
+                  </button>
+                  <button onClick={handleResetAll} 
+                    className="px-5 py-2.5 rounded-xl font-semibold text-white bg-purple-600 hover:bg-purple-500 border border-purple-400/50 shadow-lg shadow-purple-500/30 transition-all text-sm flex items-center gap-2">
+                    <RotateCcw className="w-4 h-4" /> Reset Semua
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </AdminLayout>
   );
 }

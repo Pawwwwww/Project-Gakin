@@ -8,10 +8,10 @@ export function ClusterDistributionChart() {
   const stats = useDashboardStats();
 
   const BAR_DATA = [
-    { name: "K 1", jumlah: stats.clusterCounts[0], fill: "#2563eb" }, // red-500
-    { name: "K 2", jumlah: stats.clusterCounts[1], fill: "#f97316" }, // orange-500
-    { name: "K 3", jumlah: stats.clusterCounts[2], fill: "#eab308" }, // yellow-500
-    { name: "K 4", jumlah: stats.clusterCounts[3], fill: "#22c55e" }, // green-500
+    { name: "K 1", jumlah: stats.clusterCounts[0], fill: "#3b82f6" }, // blue-500
+    { name: "K 2", jumlah: stats.clusterCounts[1], fill: "#8b5cf6" }, // violet-500
+    { name: "K 3", jumlah: stats.clusterCounts[2], fill: "#d946ef" }, // fuchsia-500
+    { name: "K 4", jumlah: stats.clusterCounts[3], fill: "#ec4899" }, // pink-500
   ];
 
   const cardBg = "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";

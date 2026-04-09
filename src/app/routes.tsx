@@ -15,6 +15,7 @@ import AdminLanding  from "../features/admin/pages/overview/AdminLanding";
 import Analytics     from "../features/admin/pages/overview/Analytics";
 import ClusterDetail from "../features/admin/pages/overview/ClusterDetail";
 import DemografiDetail from "../features/admin/pages/overview/DemografiDetail";
+import TrendAnalytics  from "../features/admin/pages/overview/TrendAnalytics";
 
 // ── Admin: Data Management ───────────────────────────────────────────
 import AdminData           from "../features/admin/pages/data-management/AdminData";
@@ -22,17 +23,11 @@ import Respondent          from "../features/admin/pages/data-management/Respond
 import RespondentDetail    from "../features/admin/pages/data-management/RespondentDetail";
 import RespondentScoreDetail from "../features/admin/pages/data-management/RespondentScoreDetail";
 import StatusKuesioner     from "../features/admin/pages/data-management/StatusKuesioner";
-
-// ── Admin: Access Control ────────────────────────────────────────────
-import AdminAccount from "../features/admin/pages/access-control/AdminAccount";
-import UserAccount  from "../features/admin/pages/access-control/UserAccount";
+import TindakLanjut        from "../features/admin/pages/data-management/TindakLanjut";
 
 function RootWrapper() {
-  const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
-      <Outlet key={location.pathname} />
-    </AnimatePresence>
+    <Outlet />
   );
 }
 
@@ -67,6 +62,7 @@ export const router = createBrowserRouter([
           { path: "analytics",                    Component: Analytics     },
           { path: "analytics/cluster-detail",     Component: ClusterDetail },
           { path: "analytics/demografi",          Component: DemografiDetail },
+          { path: "analytics/trend",              Component: TrendAnalytics },
 
           // Admin: Data Management
           { path: "data",                         Component: AdminData           },
@@ -74,10 +70,7 @@ export const router = createBrowserRouter([
           { path: "respondent/:id",               Component: RespondentDetail    },
           { path: "respondent-score/:id",         Component: RespondentScoreDetail },
           { path: "status-kuesioner",             Component: StatusKuesioner     },
-
-          // Admin: Access Control
-          { path: "admin-account",                Component: AdminAccount },
-          { path: "user-account",                 Component: UserAccount  },
+          { path: "tindak-lanjut",                Component: TindakLanjut        },
         ]
       }
     ],

@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   Menu, X, LayoutDashboard, FileText, User, LogOut,
-  Users, BarChart3, Database, Shield, Layers, AlertCircle, ChevronRight, Lock, Key, Check
+  Users, BarChart3, Database, Shield, Layers, AlertCircle, ChevronRight, Lock, Key, Check, ClipboardCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { getCurrentUserName, getCurrentRole, isLoggedIn, logout } from "../../../services/StorageService";
+import { getCurrentUserName, getCurrentRole, isLoggedIn, logout, isOPDRole, getCurrentOPDName } from "../../../services/StorageService";
 import { changeAdminPassword, getCurrentAdminUsername, loginAdmin } from "../../../services/AuthService";
 
 interface AdminLayoutProps {
@@ -35,14 +35,7 @@ const MENU_SECTIONS: MenuSection[] = [
       { label: "Data", icon: Database, path: "/admin/data" },
       { label: "Status Kuesioner", icon: FileText, path: "/admin/status-kuesioner" },
       { label: "Data Responden", icon: Users, path: "/admin/respondent-management" },
-    ],
-  },
-  {
-    title: "Access Control",
-    icon: Shield,
-    items: [
-      { label: "Admin Account", icon: Shield, path: "/admin/admin-account" },
-      { label: "User Account", icon: User, path: "/admin/user-account" },
+      { label: "Tindak Lanjut", icon: ClipboardCheck, path: "/admin/tindak-lanjut" },
     ],
   },
 ];
@@ -53,8 +46,8 @@ function AdminLayoutInner({ children, title, headerIcon }: AdminLayoutProps) {
   const location = useLocation();
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
 
-  const [adminName, setAdminName] = useState("Administrator");
-  const [adminRole, setAdminRole] = useState("admin");
+  const [adminName, setAdminName] = useState(() => getCurrentUserName() || "Administrator");
+  const [adminRole, setAdminRole] = useState(() => getCurrentRole() || "admin");
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     try { return localStorage.getItem("sidebarOpen") !== "false"; } catch { return true; }
   });
@@ -246,7 +239,10 @@ function AdminLayoutInner({ children, title, headerIcon }: AdminLayoutProps) {
     setTimeout(() => { setShowRestrictedAlert(false); setIsRestrictedExiting(false); }, 3500);
   };
   const isCamatRestricted = (path: string) => adminRole === "camat" && !new Set(["/admin", "/admin/status-kuesioner"]).has(path);
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/admin") return location.pathname === "/admin";
+    return location.pathname.startsWith(path);
+  };
 
   // ── Theme-aware class tokens (Forced Light Navy Theme) ─────────────────────
   const bg         = "bg-slate-50";
@@ -392,7 +388,15 @@ function AdminLayoutInner({ children, title, headerIcon }: AdminLayoutProps) {
           onScroll={handleSidebarScroll}
           className="flex-1 overflow-y-auto pt-6 pb-[200px] px-4 space-y-5 sidebar-scroll relative z-0"
         >
-          {MENU_SECTIONS.map((section) => (
+          {MENU_SECTIONS.map((section) => {
+            // OPD role: filter sidebar. Dinsos gets full access like admin.
+            const isOPD = isOPDRole();
+            const isDinsos = getCurrentOPDName() === "Dinas Sosial";
+            const filteredItems = (isOPD && !isDinsos && section.title === "Data Management")
+              ? section.items.filter(item => item.label === "Tindak Lanjut")
+              : section.items;
+            if (filteredItems.length === 0) return null;
+            return (
             <div key={section.title} className="space-y-1">
               <button onClick={() => toggleSection(section.title)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${sectionLbl} group`}>
@@ -402,7 +406,7 @@ function AdminLayoutInner({ children, title, headerIcon }: AdminLayoutProps) {
 
               {openSections[section.title] && (
                 <div className="space-y-0.5">
-                  {section.items.map((item) => {
+                  {filteredItems.map((item) => {
                     const restricted = isCamatRestricted(item.path);
                     return (
                       <button key={item.path}
@@ -421,7 +425,8 @@ function AdminLayoutInner({ children, title, headerIcon }: AdminLayoutProps) {
                 </div>
               )}
             </div>
-          ))}
+          );
+          })}
         </div>
 
         {/* RESTRICTED ACCESS ALERT */}
@@ -455,8 +460,8 @@ function AdminLayoutInner({ children, title, headerIcon }: AdminLayoutProps) {
                 <Shield className="w-5 h-5 text-blue-600" />
               </div>
               <div className="overflow-hidden">
-                <p className="text-sm font-bold text-white truncate">{adminName}</p>
-                <p className="text-xs text-slate-400 truncate capitalize">{adminRole.replace("_", " ")}</p>
+                <p className="text-sm font-bold text-white truncate">{isOPDRole() ? getCurrentOPDName()?.split(',')[0] || adminName : adminName}</p>
+                <p className="text-xs text-slate-400 truncate capitalize">{isOPDRole() ? 'OPD' : adminRole.replace("_", " ")}</p>
               </div>
             </div>
             

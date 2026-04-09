@@ -84,6 +84,8 @@ export function logout(): void {
   localStorage.removeItem(KEYS.USER_NAME);
   localStorage.removeItem(KEYS.ADMIN_NAME);
   localStorage.removeItem(KEYS.ADMIN_KECAMATAN);
+  localStorage.removeItem("opdNama");
+  localStorage.removeItem("opdKlasters");
 }
 
 // ── User CRUD ─────────────────────────────────────────────────────────
@@ -108,6 +110,8 @@ export function saveUser(user: UserRecord): void {
     users[idx] = user;
   }
   localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+  // Notify all listeners (same-tab and cross-tab) of data change
+  window.dispatchEvent(new StorageEvent("storage", { key: "users" }));
 }
 
 export function updateUser(nik: string, partial: Partial<UserRecord>): void {
@@ -116,11 +120,21 @@ export function updateUser(nik: string, partial: Partial<UserRecord>): void {
   if (idx !== -1) {
     users[idx] = { ...users[idx], ...partial };
     localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-    // Sinkronkan nama ke session jika yang diperbarui adalah nama
-    if (partial.fullName) {
+    // Notify all listeners (same-tab and cross-tab) of data change
+    window.dispatchEvent(new StorageEvent("storage", { key: "users" }));
+    // Sinkronkan nama ke session HANYA jika yang diperbarui adalah user yang sedang login
+    const currentNik = localStorage.getItem(KEYS.USER_NIK);
+    if (partial.fullName && currentNik === nik) {
       localStorage.setItem(KEYS.USER_NAME, partial.fullName);
     }
   }
+}
+
+export function deleteUser(nik: string): void {
+  const users = getUsers().filter((u) => u.nik !== nik);
+  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+  // Notify all listeners (same-tab and cross-tab) of data change
+  window.dispatchEvent(new StorageEvent("storage", { key: "users" }));
 }
 
 // ── Kuesioner ─────────────────────────────────────────────────────────
@@ -179,20 +193,49 @@ export function getAllKuesionerResults(): KuesionerSubmission[] {
   }
 }
 
-import { HARDCODED_USERS, HARDCODED_RESULTS } from '../data/hardcodedData';
+// ── OPD Session Helpers ───────────────────────────────────────────────
+export function getCurrentOPDName(): string {
+  return localStorage.getItem("opdNama") || "";
+}
+
+export function getCurrentOPDKlasters(): number[] {
+  try {
+    return JSON.parse(localStorage.getItem("opdKlasters") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function isOPDRole(): boolean {
+  return getCurrentRole() === "opd";
+}
+
+import { MOCK_USERS, MOCK_RESULTS } from '../data/mockData';
+
+const SEED_VERSION = 'excel_v4_auth_fix'; // bump this to force re-seed
 
 export function seedDummyUser(): void {
-  const users = getUsers();
-  // We only seed if there are extremely few users (e.g. initial load or wiped)
-  if (users.length <= 5) {
-    localStorage.setItem(KEYS.USERS, JSON.stringify(HARDCODED_USERS));
-    
-    // Seed kuesioner results
-    // Write individual results
-    HARDCODED_RESULTS.forEach(res => {
-        localStorage.setItem(KEYS.KUESIONER_DONE(res.nik), JSON.stringify(res));
-    });
-    // Write aggregate
-    localStorage.setItem(KEYS.KUESIONER_ALL, JSON.stringify(HARDCODED_RESULTS));
+  const currentVersion = localStorage.getItem('seed_version');
+  if (currentVersion === SEED_VERSION) return; // already seeded with this version
+
+  // Get existing users from localStorage (to preserve manually-added users)
+  const existingUsers = getUsers();
+  const existingNiks = new Set(existingUsers.map(u => u.nik));
+
+  // Merge GAKIN users from MOCK_USERS (don't duplicate)
+  const gakinToAdd = MOCK_USERS
+    .filter(u => u.gakinStatus === "GAKIN" && !existingNiks.has(u.nik));
+
+  const mergedUsers = [...existingUsers, ...gakinToAdd];
+  localStorage.setItem(KEYS.USERS, JSON.stringify(mergedUsers));
+
+  // Seed kuesioner results
+  const allResults: KuesionerSubmission[] = [];
+  for (const r of MOCK_RESULTS) {
+    localStorage.setItem(KEYS.KUESIONER_DONE(r.nik), JSON.stringify(r));
+    allResults.push(r);
   }
+  localStorage.setItem(KEYS.KUESIONER_ALL, JSON.stringify(allResults));
+
+  localStorage.setItem('seed_version', SEED_VERSION);
 }

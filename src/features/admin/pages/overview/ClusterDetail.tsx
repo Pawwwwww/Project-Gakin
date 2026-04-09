@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "../../components/AdminLayout";
 import { motion } from "motion/react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
 import { Layers, ArrowLeft, Users2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 import { getUsers, getAllKuesionerResults } from "../../../../services/StorageService";
@@ -80,12 +80,12 @@ const CustomBarShape = (props: any) => {
           x={x + width / 2}
           y={y - 10}
           textAnchor="middle"
-          fill={fill}
+          fill={fill === '#60a5fa' ? '#2563eb' : (fill === '#f472b6' ? '#be185d' : fill)}
           fontSize={15}
           fontWeight="900"
-          style={{ filter: `drop-shadow(0 0 4px ${fill}30)` }}
+          style={{ filter: `drop-shadow(0 0 2px ${fill}50)` }}
         >
-          <AnimatedNumber id={`chart-${chartTitle}-${payload.klaster}`} value={safeValue} />
+          {safeValue === 0 ? "" : safeValue}
         </text>
       )}
     </g>
@@ -93,32 +93,36 @@ const CustomBarShape = (props: any) => {
 };
 
 // ── Filter types ──
-type GenderFilter = "keseluruhan" | "laki" | "perempuan" | "produktif";
+type ViewMode = "keseluruhan" | "gender" | "produktif";
 
-const CLUSTER_COLORS = ["#991b1b", "#c2410c", "#a16207", "#15803d"];
+const CLUSTER_COLORS = ["#3b82f6", "#8b5cf6", "#d946ef", "#ec4899"];
 const BAR_FILLS = [
-  { klaster: "Klaster 1", fill: "#991b1b" },
-  { klaster: "Klaster 2", fill: "#c2410c" },
-  { klaster: "Klaster 3", fill: "#a16207" },
-  { klaster: "Klaster 4", fill: "#15803d" },
+  { klaster: "Klaster 1", fill: "#3b82f6" },
+  { klaster: "Klaster 2", fill: "#8b5cf6" },
+  { klaster: "Klaster 3", fill: "#d946ef" },
+  { klaster: "Klaster 4", fill: "#ec4899" },
 ];
 
-const GENDER_OPTIONS: { key: GenderFilter; label: string }[] = [
+const VIEW_OPTIONS: { key: ViewMode; label: string }[] = [
   { key: "keseluruhan", label: "Keseluruhan" },
-  { key: "laki", label: "Laki-laki" },
-  { key: "perempuan", label: "Perempuan" },
+  { key: "gender", label: "Gender" },
   { key: "produktif", label: "Usia Produktif" },
 ];
 
-type ClusterEntry = { klaster: string; value: number; fill: string };
+type ClusterEntry = { 
+  klaster: string; 
+  value: number; 
+  laki: number;
+  perempuan: number;
+  fill: string; 
+};
 type ClusterSet = { keseluruhan: ClusterEntry[]; gakin: ClusterEntry[]; nonGakin: ClusterEntry[] };
-type AllClusterData = Record<GenderFilter, ClusterSet>;
+type AllClusterData = Record<ViewMode, ClusterSet>;
 
 function useClusterData(): AllClusterData {
   const [data, setData] = useState<AllClusterData>({
     keseluruhan: { keseluruhan: [], gakin: [], nonGakin: [] },
-    laki: { keseluruhan: [], gakin: [], nonGakin: [] },
-    perempuan: { keseluruhan: [], gakin: [], nonGakin: [] },
+    gender: { keseluruhan: [], gakin: [], nonGakin: [] },
     produktif: { keseluruhan: [], gakin: [], nonGakin: [] },
   });
 
@@ -127,19 +131,19 @@ function useClusterData(): AllClusterData {
     const results = getAllKuesionerResults();
     const currentYear = new Date().getFullYear();
 
-    // 4 klasters × 4 gender-filter × 3 types (all/gakin/nonGakin)
-    type Bucket = { all: number; gakin: number; nonGakin: number };
-    const buildBuckets = (): Bucket[] => [
-      { all: 0, gakin: 0, nonGakin: 0 },
-      { all: 0, gakin: 0, nonGakin: 0 },
-      { all: 0, gakin: 0, nonGakin: 0 },
-      { all: 0, gakin: 0, nonGakin: 0 },
-    ];
+    // 4 klasters × 3 types (all/gakin/nonGakin)
+    // inside each we track: total, laki, perempuan
+    type BucketStats = { total: number; laki: number; perempuan: number };
+    type Bucket = { all: BucketStats; gakin: BucketStats; nonGakin: BucketStats };
+    const buildBuckets = (): Bucket[] => Array(4).fill(null).map(() => ({
+      all: { total: 0, laki: 0, perempuan: 0 },
+      gakin: { total: 0, laki: 0, perempuan: 0 },
+      nonGakin: { total: 0, laki: 0, perempuan: 0 }
+    }));
 
-    const buckets: Record<GenderFilter, Bucket[]> = {
+    const buckets: Record<ViewMode, Bucket[]> = {
       keseluruhan: buildBuckets(),
-      laki: buildBuckets(),
-      perempuan: buildBuckets(),
+      gender: buildBuckets(), // Data is identical to keseluruhan, but triggers different render
       produktif: buildBuckets(),
     };
 
@@ -161,31 +165,41 @@ function useClusterData(): AllClusterData {
       }
       const isProduktif = age >= 15 && age <= 64;
 
-      const increment = (b: Bucket) => {
-        b.all++;
-        if (isGakin) b.gakin++;
-        else b.nonGakin++;
+      const increment = (b: BucketStats) => {
+        b.total++;
+        if (isLaki) b.laki++;
+        if (isPerempuan) b.perempuan++;
       };
 
-      increment(buckets.keseluruhan[kIdx]);
-      if (isLaki) increment(buckets.laki[kIdx]);
-      if (isPerempuan) increment(buckets.perempuan[kIdx]);
-      if (isProduktif) increment(buckets.produktif[kIdx]);
+      const processBucket = (b: Bucket) => {
+        increment(b.all);
+        if (isGakin) increment(b.gakin);
+        else increment(b.nonGakin);
+      };
+
+      processBucket(buckets.keseluruhan[kIdx]);
+      processBucket(buckets.gender[kIdx]);
+      if (isProduktif) processBucket(buckets.produktif[kIdx]);
     });
 
-    const toEntries = (buckets: Bucket[], key: "all" | "gakin" | "nonGakin"): ClusterEntry[] =>
-      BAR_FILLS.map((b, i) => ({ klaster: b.klaster, value: buckets[i][key], fill: b.fill }));
+    const toEntries = (bArray: Bucket[], key: "all" | "gakin" | "nonGakin"): ClusterEntry[] =>
+      BAR_FILLS.map((f, i) => ({ 
+        klaster: f.klaster, 
+        value: bArray[i][key].total, 
+        laki: bArray[i][key].laki,
+        perempuan: bArray[i][key].perempuan,
+        fill: f.fill 
+      }));
 
-    const build = (gf: GenderFilter): ClusterSet => ({
-      keseluruhan: toEntries(buckets[gf], "all"),
-      gakin: toEntries(buckets[gf], "gakin"),
-      nonGakin: toEntries(buckets[gf], "nonGakin"),
+    const build = (view: ViewMode): ClusterSet => ({
+      keseluruhan: toEntries(buckets[view], "all"),
+      gakin: toEntries(buckets[view], "gakin"),
+      nonGakin: toEntries(buckets[view], "nonGakin"),
     });
 
     setData({
       keseluruhan: build("keseluruhan"),
-      laki: build("laki"),
-      perempuan: build("perempuan"),
+      gender: build("gender"),
       produktif: build("produktif"),
     });
   }, []);
@@ -193,7 +207,7 @@ function useClusterData(): AllClusterData {
   return data;
 }
 
-function ClusterChart({ title, data, subtitle }: any) {
+function ClusterChart({ title, data, subtitle, mode }: { title: string, data: any, subtitle: string, mode: ViewMode }) {
   const location = useLocation() as any;
   
   const textPrimary   = "text-gray-900";
@@ -213,22 +227,32 @@ function ClusterChart({ title, data, subtitle }: any) {
         </h3>
         {subtitle && <p className={`text-sm mt-1 ${textSecondary}`}>{subtitle}</p>}
       </div>
-      <div className="h-[280px] w-full mt-4">
+      <div className="h-[320px] w-full mt-4">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart key={location.key} data={data} margin={{ top: 25, right: 10, left: -20, bottom: 0 }}>
+          <BarChart data={data} margin={{ top: 25, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={"#00000010"} vertical={false} />
             <XAxis dataKey="klaster" stroke={"#4b5563"} fontSize={12} tickLine={false} axisLine={false} />
             <YAxis stroke={"#4b5563"} fontSize={12} tickLine={false} axisLine={false} />
-            <Bar 
-              dataKey="value" 
-              animationDuration={1500} 
-              animationEasing="ease-out"
-              shape={<CustomBarShape chartTitle={title} />}
-            >
-              {data.map((entry: any, index: number) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
-              ))}
-            </Bar>
+            <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+            
+            {mode === "gender" ? (
+              <>
+                <Bar name="Laki-laki" dataKey="laki" fill="#60a5fa" shape={<CustomBarShape chartTitle={`${title}-L`} />} animationDuration={1500} animationEasing="ease-out" />
+                <Bar name="Perempuan" dataKey="perempuan" fill="#f472b6" shape={<CustomBarShape chartTitle={`${title}-P`} />} animationDuration={1500} animationEasing="ease-out" />
+              </>
+            ) : (
+              <Bar 
+                dataKey="value" 
+                shape={<CustomBarShape chartTitle={title} />}
+                animationDuration={1500}
+                animationEasing="ease-out"
+              >
+                {data.map((entry: any, index: number) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            )}
+            
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -238,10 +262,10 @@ function ClusterChart({ title, data, subtitle }: any) {
 
 export default function ClusterDetail() {
   const navigate = useNavigate();
-  const [genderFilter, setGenderFilter] = useState<GenderFilter>("keseluruhan");
+  const [viewMode, setViewMode] = useState<ViewMode>("keseluruhan");
   const clusterData = useClusterData();
   
-  const currentData = clusterData[genderFilter];
+  const currentData = clusterData[viewMode];
 
   return (
     <AdminLayout title="Analisis Klaster" headerIcon={<Layers className="w-4 h-4" />}>
@@ -282,29 +306,73 @@ export default function ClusterDetail() {
         className="flex mb-8"
       >
         {/* Detail Filter */}
-        <div className={`shadow-sm backdrop-blur-md rounded-2xl p-1.5 flex flex-wrap md:flex-nowrap items-center gap-1 border relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] sm:overflow-x-auto ${"bg-white border-gray-300 shadow-md"}`}>
-          <Users2 className="w-4 h-4 text-gray-500 mx-2" />
-          {GENDER_OPTIONS.map((opt) => (
+        <div className="shadow-sm backdrop-blur-md rounded-2xl p-1.5 flex flex-wrap md:flex-nowrap items-center gap-1 border relative overflow-hidden bg-white border-gray-300">
+          <Users2 className="w-4 h-4 text-gray-500 mx-2 shrink-0" />
+          {VIEW_OPTIONS.map((opt) => (
             <button
               key={opt.key}
-              onClick={() => setGenderFilter(opt.key)}
-              className={`relative px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${
-                genderFilter === opt.key
-                  ? ("text-gray-900")
-                  : ("text-gray-500 hover:text-gray-900")
+              onClick={() => setViewMode(opt.key)}
+              className={`relative px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-colors duration-300 z-10 ${
+                viewMode === opt.key
+                  ? "text-blue-700"
+                  : "text-gray-500 hover:text-gray-800"
               }`}
             >
-              {genderFilter === opt.key && (
-                <motion.div
-                  layoutId="active-glass-filter"
-                  className={`absolute inset-0 backdrop-blur-lg border rounded-xl shadow-sm ${"bg-gray-100 border-gray-300"}`}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
+              {viewMode === opt.key && (
+                <>
+                  <motion.div
+                    layoutId="active-glass-filter"
+                    className="absolute inset-0 bg-blue-100/60 backdrop-blur-md border border-blue-200/50 rounded-xl shadow-inner shadow-blue-500/10"
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  />
+                  {/* Bubbles / Liquid effect */}
+                  <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl"
+                  >
+                    {[...Array(4)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute bg-blue-400/20 rounded-full blur-[1px]"
+                        style={{ 
+                          width: Math.random() * 6 + 4, 
+                          height: Math.random() * 6 + 4,
+                          left: `${10 + Math.random() * 80}%`,
+                          bottom: '-10%'
+                        }}
+                        animate={{ 
+                          y: [-10, -50], 
+                          x: [0, (Math.random() - 0.5) * 20],
+                          opacity: [0, 0.8, 0],
+                          scale: [0.5, 1.2, 0.8]
+                        }}
+                        transition={{ 
+                          duration: 2 + Math.random() * 2, 
+                          repeat: Infinity, 
+                          delay: Math.random() * 2,
+                          ease: "easeOut"
+                        }}
+                      />
+                    ))}
+                  </motion.div>
+                </>
               )}
               <span className="relative z-10">{opt.label}</span>
             </button>
           ))}
         </div>
+        
+        {viewMode === "gender" && (
+          <div className="ml-4 flex items-center gap-3 px-4 rounded-xl border bg-white shadow-sm">
+             <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                <span className="flex w-3 h-3 rounded-full bg-blue-500"></span> Laki-laki
+             </div>
+             <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                <span className="flex w-3 h-3 rounded-full bg-pink-500"></span> Perempuan
+             </div>
+          </div>
+        )}
       </motion.div>
 
       {/* ── CLUSTER CHARTS ── */}
@@ -312,16 +380,19 @@ export default function ClusterDetail() {
         <ClusterChart
           title="Keseluruhan Klaster"
           subtitle="Total responden per klaster"
+          mode={viewMode}
           data={currentData.keseluruhan}
         />
         <ClusterChart
           title="GAKIN Klaster"
           subtitle="Responden GAKIN per klaster"
+          mode={viewMode}
           data={currentData.gakin}
         />
         <ClusterChart
           title="Non-GAKIN Klaster"
           subtitle="Responden Non-GAKIN per klaster"
+          mode={viewMode}
           data={currentData.nonGakin}
         />
       </div>
@@ -331,38 +402,58 @@ export default function ClusterDetail() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8"
       >
         {currentData.keseluruhan.map((item, i) => {
           const color = CLUSTER_COLORS[i];
+          const gakinVal = currentData.gakin[i].value;
+          const nonGakinVal = currentData.nonGakin[i].value;
+          
           return (
-            <motion.button
+            <motion.div
               whileHover={{ y: -4, scale: 1.01 }}
               key={item.klaster}
               className={`shadow-sm backdrop-blur-xl rounded-2xl p-5 border relative overflow-hidden group transition-all text-left ${"bg-white border-gray-300 shadow-md"}`}
             >
               <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity border-2 z-0"
+                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity border-2 z-0 pointer-events-none"
                 style={{ borderColor: `${color}80` }}
               />
               <div
-                className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20 blur-[30px] rounded-full transition-opacity group-hover:opacity-40"
+                className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 blur-[30px] rounded-full transition-opacity group-hover:opacity-30 pointer-events-none"
                 style={{ backgroundColor: color }}
               />
-              <div className="flex items-center gap-2 mb-3 relative z-10">
-                <div
-                  className="w-3.5 h-3.5 rounded-full shadow-inner"
-                  style={{ backgroundColor: color }}
-                />
-                <span className={`text-sm font-medium transition-colors tracking-wider uppercase ${"text-gray-600 group-hover:text-gray-800"}`}>{item.klaster}</span>
+              
+              <div className="flex justify-between items-start mb-2 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3.5 h-3.5 rounded-full shadow-inner"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className={`text-sm font-bold uppercase tracking-wider ${"text-gray-800"}`}>{item.klaster}</span>
+                </div>
               </div>
-              <p className={`text-2xl font-black relative z-10 drop-shadow-sm ${"text-gray-900"}`}>
-                <AnimatedNumber id={`summary-${item.klaster}`} value={item.value} />
-              </p>
-              <p className={`text-xs mt-1 relative z-10 transition-colors ${"text-gray-500 group-hover:text-gray-600"}`}>
-                {genderFilter === "keseluruhan" ? "Total" : genderFilter === "laki" ? "Laki-laki" : genderFilter === "perempuan" ? "Perempuan" : "Usia Produktif"} responden
-              </p>
-            </motion.button>
+              
+              <div className="my-2 relative z-10">
+                <p className={`text-3xl font-black drop-shadow-sm ${"text-gray-900"}`}>
+                  <AnimatedNumber id={`summary-${item.klaster}`} value={item.value} />
+                </p>
+                <p className={`text-xs mt-0.5 font-semibold ${"text-gray-500"}`}>
+                  Total Responden
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-100 relative z-10">
+                <div className="px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="text-[10px] uppercase font-bold text-emerald-600 mb-0.5">GAKIN</p>
+                  <p className="text-sm font-black text-gray-800"><AnimatedNumber id={`summary-gakin-${item.klaster}`} value={gakinVal} /></p>
+                </div>
+                <div className="px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="text-[10px] uppercase font-bold text-blue-600 mb-0.5">NON-GAKIN</p>
+                  <p className="text-sm font-black text-gray-800"><AnimatedNumber id={`summary-nongakin-${item.klaster}`} value={nonGakinVal} /></p>
+                </div>
+              </div>
+            </motion.div>
           );
         })}
       </motion.div>

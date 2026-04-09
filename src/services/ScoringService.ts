@@ -58,13 +58,13 @@ export function getKwuCategory(score: number): {
       bg: "bg-green-100 border-green-300",
       desc: "Memiliki kompetensi kewirausahaan yang matang dan siap mengembangkan usaha mandiri.",
     };
-  if (score >= 37.5)
+  if (score > 37.5)
     return {
       label: "Sedang", color: "text-blue-700",
       bg: "bg-blue-100 border-blue-300",
       desc: "Memiliki kemampuan wirausaha yang cukup dengan potensi berkembang lebih jauh.",
     };
-  if (score >= 30)
+  if (score > 30)
     return {
       label: "Dasar", color: "text-orange-700",
       bg: "bg-orange-100 border-orange-300",
@@ -77,7 +77,7 @@ export function getKwuCategory(score: number): {
   };
 }
 
-// ── TIPI Scoring ──────────────────────────────────────────────────────
+/// ── TIPI Scoring ──────────────────────────────────────────────────────
 export function calcTIPIAspects(tipi: Record<number, number>): Record<TIPIAspect, number> {
   const s = (id: number) => tipi[id] || 0;
   const r = (id: number) => 8 - (tipi[id] || 0);
@@ -90,13 +90,13 @@ export function calcTIPIAspects(tipi: Record<number, number>): Record<TIPIAspect
   };
 }
 
+// ✅ DIPERBAIKI: Kategori berdasarkan nilai X langsung (1-7 scale)
 export function getTIPICategoryLabel(aspect: TIPIAspect, score: number): string {
-  const [t1, t2, t3, t4] = TIPI_THRESHOLDS[aspect];
-  if (score <  t1) return "Rendah";
-  if (score <  t2) return "Dibawah Rerata";
-  if (score <  t3) return "Rerata";
-  if (score <= t4) return "Diatas Rerata";
-  return "Tinggi";
+  if (score <= 2.5) return "Sangat Rendah";
+  if (score <= 3.5) return "Rendah";
+  if (score <= 4.5) return "Rerata";
+  if (score <= 5.5) return "Tinggi";
+  return "Sangat Tinggi";
 }
 
 // ── Cluster Determination ─────────────────────────────────────────────
@@ -106,15 +106,15 @@ export function determineKluster(
   tipiCats: Record<TIPIAspect, string>
 ): number {
   const n = tipiCats.neuroticism;
-  const isNeuroticLow  = n === "Rendah" || n === "Dibawah Rerata";
-  const isNeuroticHigh = n === "Tinggi" || n === "Diatas Rerata" || n === "Rerata";
+  const isNeuroticLow  = n === "Rendah" || n === "Sangat Rendah";
+  const isNeuroticHigh = n === "Tinggi" || n === "Sangat Tinggi" || n === "Rerata";
 
   const isGritHighOrMid  = gritLabel === "Tinggi" || gritLabel === "Sedang";
   const isKwuHighOrMid   = kwuLabel  === "Tinggi" || kwuLabel  === "Sedang";
   const isGritLow        = gritLabel === "Rendah";
   const isKwuLowOrBase   = kwuLabel  === "Rendah" || kwuLabel  === "Dasar";
 
-  const tHigh = ["Tinggi", "Diatas Rerata", "Rerata"];
+  const tHigh = ["Tinggi", "Sangat Tinggi", "Rerata"];
   const isOtherTipiHigh =
     tHigh.includes(tipiCats.extraversion) &&
     tHigh.includes(tipiCats.agreeableness) &&

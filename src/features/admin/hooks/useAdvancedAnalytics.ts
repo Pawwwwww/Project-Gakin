@@ -12,10 +12,7 @@ export type MonthlyTrend = {
 
 export type RadarData = {
   subject: string;
-  K1: number;
-  K2: number;
-  K3: number;
-  K4: number;
+  Total: number;
   fullMark: number;
 };
 
@@ -54,13 +51,12 @@ export function useAdvancedAnalytics() {
     // For now, let's create a realistic mock based on total respondents:
     const avgSeconds = results.length > 0 ? (240 + Math.floor(Math.random() * 60)) : 0; // 4 to 5 minutes
 
-    // Calculate Radar scores
-    let scoreSums = [
-      { grit: 0, tipi: 0, kwu: 0, count: 0 },
-      { grit: 0, tipi: 0, kwu: 0, count: 0 },
-      { grit: 0, tipi: 0, kwu: 0, count: 0 },
-      { grit: 0, tipi: 0, kwu: 0, count: 0 }
-    ];
+    // Calculate Radar scores based on Categories (Tinggi, Sedang, Rendah)
+    const radarCounts = {
+      gTinggi: 0, gSedang: 0, gRendah: 0,
+      tTinggi: 0, tSedang: 0, tRendah: 0,
+      kTinggi: 0, kSedang: 0, kRendah: 0,
+    };
 
     // Income Tracking
     const incomeGroups: Record<string, [number, number, number, number]> = {
@@ -79,12 +75,20 @@ export function useAdvancedAnalytics() {
       const klusterIdx = (score.kluster || 1) - 1;
 
       if (klusterIdx >= 0 && klusterIdx < 4) {
-        // Accumulate radar scores
+        // Accumulate radar categorical counts
         const totalTipi = Object.values(score.tipiAspects).reduce((a, b) => a + b, 0);
-        scoreSums[klusterIdx].grit += score.gritScore;
-        scoreSums[klusterIdx].tipi += totalTipi;
-        scoreSums[klusterIdx].kwu += score.kwuScore;
-        scoreSums[klusterIdx].count += 1;
+        
+        if (score.gritScore >= 40) radarCounts.gTinggi++;
+        else if (score.gritScore >= 30) radarCounts.gSedang++;
+        else radarCounts.gRendah++;
+
+        if (totalTipi >= 50) radarCounts.tTinggi++;
+        else if (totalTipi >= 35) radarCounts.tSedang++;
+        else radarCounts.tRendah++;
+
+        if (score.kwuScore >= 90) radarCounts.kTinggi++;
+        else if (score.kwuScore >= 60) radarCounts.kSedang++;
+        else radarCounts.kRendah++;
 
         if (user) {
           // Accumulate Income
@@ -103,19 +107,18 @@ export function useAdvancedAnalytics() {
       }
     });
 
+    const totalR = results.length || 1;
     const radar = [
-      { subject: "Ketekunan (GRIT)", fullMark: 50, K1: 0, K2: 0, K3: 0, K4: 0 },
-      { subject: "Kepribadian (TIPI)", fullMark: 70, K1: 0, K2: 0, K3: 0, K4: 0 },
-      { subject: "Kewirausahaan (KWU)", fullMark: 120, K1: 0, K2: 0, K3: 0, K4: 0 },
+      { subject: "GRIT Tinggi", Total: radarCounts.gTinggi, fullMark: totalR },
+      { subject: "GRIT Sedang", Total: radarCounts.gSedang, fullMark: totalR },
+      { subject: "GRIT Rendah", Total: radarCounts.gRendah, fullMark: totalR },
+      { subject: "TIPI Tinggi", Total: radarCounts.tTinggi, fullMark: totalR },
+      { subject: "TIPI Sedang", Total: radarCounts.tSedang, fullMark: totalR },
+      { subject: "TIPI Rendah", Total: radarCounts.tRendah, fullMark: totalR },
+      { subject: "KWU Tinggi",  Total: radarCounts.kTinggi, fullMark: totalR },
+      { subject: "KWU Sedang",  Total: radarCounts.kSedang, fullMark: totalR },
+      { subject: "KWU Rendah",  Total: radarCounts.kRendah, fullMark: totalR },
     ];
-
-    scoreSums.forEach((sum, idx) => {
-      const c = sum.count || 1;
-      const kKey = `K${idx + 1}` as "K1" | "K2" | "K3" | "K4";
-      radar[0][kKey] = Math.round(sum.grit / c);
-      radar[1][kKey] = Math.round(sum.tipi / c);
-      radar[2][kKey] = Math.round(sum.kwu / c);
-    });
 
     const incomeArr = Object.keys(incomeGroups).map((key) => ({
       range: key,

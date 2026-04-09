@@ -7,8 +7,9 @@ import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
   ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell,
-  PieChart, Pie
+  PieChart, Pie, AreaChart, Area
 } from "recharts";
+import { useDashboardStats } from "../../hooks/useDashboardStats";
 
 const CLUSTER_COLORS = {
   k1: "#2563eb",
@@ -19,6 +20,12 @@ const CLUSTER_COLORS = {
 
 export default function DemografiDetail() {
   const data = useAdvancedAnalytics();
+  const stats = useDashboardStats();
+  
+  const PRODUCTIVE_AGE_DATA = [
+    { age: "15-64", jumlah: stats.usiaProduktifCount },
+    { age: "Lainnya", jumlah: (stats.totalResponden - stats.usiaProduktifCount) },
+  ];
 
   const cardBg = "bg-white/95 border-gray-300 shadow-md shadow-gray-200/50";
   const glowLight = "bg-blue-600/5";
@@ -59,12 +66,8 @@ export default function DemografiDetail() {
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data.radarData}>
                     <PolarGrid stroke="#e5e7eb" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: "#4b5563", fontSize: 13, fontWeight: 600 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={{ fill: "#9ca3af" }} />
-                    <Radar name="Klaster 1" dataKey="K1" stroke={CLUSTER_COLORS.k1} fill={CLUSTER_COLORS.k1} fillOpacity={0.4} strokeWidth={2} />
-                    <Radar name="Klaster 2" dataKey="K2" stroke={CLUSTER_COLORS.k2} fill={CLUSTER_COLORS.k2} fillOpacity={0.4} strokeWidth={2} />
-                    <Radar name="Klaster 3" dataKey="K3" stroke={CLUSTER_COLORS.k3} fill={CLUSTER_COLORS.k3} fillOpacity={0.4} strokeWidth={2} />
-                    <Radar name="Klaster 4" dataKey="K4" stroke={CLUSTER_COLORS.k4} fill={CLUSTER_COLORS.k4} fillOpacity={0.4} strokeWidth={2} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: "#4b5563", fontSize: 11, fontWeight: 600 }} />
+                    <Radar name="Distribusi Jawaban" dataKey="Total" stroke="#10b981" fill="#10b981" fillOpacity={0.5} strokeWidth={2} />
                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                     <RechartsTooltip contentStyle={{ borderRadius: '12px', borderColor: '#e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                   </RadarChart>
@@ -72,13 +75,11 @@ export default function DemografiDetail() {
               </div>
 
               <div className="w-full lg:w-1/3 space-y-4">
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                  <h4 className="font-bold text-blue-800 text-sm mb-1">Catatan Analisis:</h4>
-                  <ul className="text-xs text-gray-700 space-y-2 list-disc pl-4 mt-2">
-                    <li><strong className="text-emerald-600">Klaster 4</strong> secara grafis memiliki rentang nilai terluas (Skor maksimal di semua dimensi).</li>
-                    <li><strong className="text-yellow-600">Klaster 3</strong> cenderung menempel pada Klaster 4 namun dengan indeks KWU yang sedikit lebih rendah.</li>
-                    <li><strong className="text-blue-600">Klaster 1</strong> menunjukkan defisit yang signifikan pada aspek Ketekunan (GRIT).</li>
-                  </ul>
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                  <h4 className="font-bold text-emerald-800 text-sm mb-1">Status Distribusi</h4>
+                  <p className="text-xs text-emerald-700 leading-relaxed text-justify">
+                    Berdasarkan kuesioner yang masuk, grafik ini memetakan persentase responden ke dalam klasifikasi <strong className="font-black text-emerald-900">Tinggi, Sedang, Rendah</strong> untuk setiap dimensi psikometri. Hal ini menunjukkan mayoritas kekuatan mentalitas responden tanpa bias klaster.
+                  </p>
                 </div>
               </div>
             </div>
@@ -154,6 +155,48 @@ export default function DemografiDetail() {
             </div>
           </motion.div>
         </div>
+
+        {/* AGE DEMOGRAPHY ROW */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-6 mb-8">
+           <div className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 overflow-hidden relative ${cardBg}`}>
+              <div className="mb-6 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-500" /> Distribusi Kelompok Usia
+                  </h3>
+                  <p className="text-sm text-gray-600">Perbandingan jumlah responden usia produktif vs non-produktif.</p>
+                </div>
+                <div className="flex gap-4">
+                   <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl text-center">
+                      <span className="block text-[10px] uppercase font-black text-blue-500">Usia Produktif</span>
+                      <span className="text-lg font-black text-blue-700">{stats.usiaProduktifPct}%</span>
+                   </div>
+                   <div className="bg-gray-50 border border-gray-100 px-4 py-2 rounded-xl text-center">
+                      <span className="block text-[10px] uppercase font-black text-gray-400">Non-Produktif</span>
+                      <span className="text-lg font-black text-gray-600">{100 - stats.usiaProduktifPct}%</span>
+                   </div>
+                </div>
+              </div>
+
+              <div className="h-[350px] w-full relative z-10">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={PRODUCTIVE_AGE_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorUsiaDetail" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#00000010" />
+                    <XAxis dataKey="age" fontSize={11} stroke="#6b7280" tickLine={false} axisLine={false} />
+                    <YAxis fontSize={11} stroke="#6b7280" tickLine={false} axisLine={false} />
+                    <RechartsTooltip contentStyle={{ borderRadius: '12px', borderColor: '#e5e7eb' }} />
+                    <Area type="monotone" dataKey="jumlah" name="Jumlah Responden" stroke="#2563eb" fillOpacity={1} fill="url(#colorUsiaDetail)" strokeWidth={3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+           </div>
+        </motion.div>
       </div>
     </AdminLayout>
   );

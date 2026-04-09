@@ -277,31 +277,28 @@ export default function RespondentScoreDetail() {
               <InfoRow label="Kode Pos" value={r.kodePosKtp} />
             </motion.div>
             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className={`shadow-sm backdrop-blur-xl rounded-2xl border p-6 ${bgCard}`}>
-              <div className="flex items-center gap-3 mb-5"><div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20"><MapPin className="w-5 h-5 text-blue-400" /></div><div><h3 className={`font-bold ${textPrimary}`}>Alamat Domisili</h3><p className={`text-xs ${textSecondary}`}>Tempat tinggal saat ini</p></div></div>
-              <InfoRow label="Alamat" value={r.alamatDomisili} />
-              <InfoRow label="RT/RW" value={`${r.rtDomisili}/${r.rwDomisili}`} />
-              <InfoRow label="Kelurahan" value={r.kelurahanDomisili} />
-              <InfoRow label="Kecamatan" value={r.kecamatanDomisili} />
-              <InfoRow label="Kota" value={r.kotaDomisili} />
-              <InfoRow label="Provinsi" value={r.provinsiDomisili} />
-              <InfoRow label="Kode Pos" value={r.kodePosDomisili} />
+              <div className="flex items-center gap-3 mb-5"><div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Briefcase className="w-5 h-5 text-emerald-500" /></div><div><h3 className={`font-bold ${textPrimary}`}>Bidang Usaha</h3><p className={`text-xs ${textSecondary}`}>Informasi kewirausahaan</p></div></div>
+              <InfoRow label="Memiliki Usaha" value={r.punyaUsaha === "ya" ? "Ya" : "Tidak"} />
+              {r.punyaUsaha === "ya" ? (
+                <>
+                  <InfoRow label="Bidang Usaha" value={r.bidangUsaha} />
+                  <InfoRow label="Penghasilan/Hari" value={r.penghasilanPerHari ? `Rp ${r.penghasilanPerHari}` : "-"} />
+                  <InfoRow label="Lama Berusaha" value={r.lamaBerusaha} />
+                  <InfoRow label="Ganti Usaha" value={r.gantiUsaha} />
+                </>
+              ) : (
+                <div className="py-4 text-center">
+                  <Briefcase className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                  <p className={`text-xs ${textSecondary}`}>Tidak memiliki usaha</p>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
       )}
 
-      {/* Usaha Card */}
-      {r && r.punyaUsaha === "ya" && (
-        <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }} className={`shadow-sm backdrop-blur-xl rounded-2xl border p-6 mb-6 ${bgCard}`}>
-          <div className="flex items-center gap-3 mb-5"><div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><Briefcase className="w-5 h-5 text-emerald-500" /></div><div><h3 className={`font-bold ${textPrimary}`}>Informasi Usaha</h3><p className={`text-xs ${textSecondary}`}>Detail kegiatan wirausaha</p></div></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-            <InfoRow label="Bidang Usaha" value={r.bidangUsaha} />
-            <InfoRow label="Penghasilan/Hari" value={r.penghasilanPerHari} />
-            <InfoRow label="Lama Berusaha" value={r.lamaBerusaha} />
-            <InfoRow label="Ganti Usaha" value={r.gantiUsaha} />
-          </div>
-        </motion.div>
-      )}
+
+
 
       {/* ═══ DELETE CONFIRM MODAL ═══ */}
       <AnimatePresence>

@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   LogOut, ClipboardList, User, ChevronRight,
-  CheckCircle, Info, Star, MapPin, Brain
+  CheckCircle, Info, Star, MapPin
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { KLUSTER_INFO } from "../../../entities/respondent";
-import { calcFullScore } from "../../../services/ScoringService";
-import { getCurrentUserNIK, getCurrentUserName, getKuesionerResult, logout, isLoggedIn, getCurrentRole, findUserByNIK, UserRecord, KuesionerSubmission } from "../../../services/StorageService";
+import { getCurrentUserNIK, getCurrentUserName, getKuesionerResult, logout, isLoggedIn, getCurrentRole } from "../../../services/StorageService";
 import Profile from "../components/profile/Profile";
 import UserHeader from "../components/UserHeader";
 import { ConfirmModal } from "../../../components/shared/ConfirmModal";
@@ -40,14 +38,8 @@ export default function UserLanding() {
   const [userNIK, setUserNIK] = useState("");
   const [userName, setUserName] = useState("");
   const [sudahIsi, setSudahIsi] = useState(false);
-  const [userKluster, setUserKluster] = useState<number | null>(null);
-  const [userGrit, setUserGrit] = useState("");
-  const [userKwu, setUserKwu] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  
-  const [completeUser, setCompleteUser] = useState<UserRecord | null>(null);
-  const [kuesionerResult, setKuesionerResult] = useState<KuesionerSubmission | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn() || getCurrentRole() !== "user") {
@@ -59,27 +51,11 @@ export default function UserLanding() {
     setUserNIK(nik);
     setUserName(name);
 
-    // Cek apakah sudah pernah mengisi kuesioner dan hitung kluster
     const kuesResult = getKuesionerResult(nik);
     if (kuesResult && kuesResult.data) {
       setSudahIsi(true);
-      setKuesionerResult(kuesResult);
-      
-      const fullUser = findUserByNIK(nik);
-      if (fullUser) setCompleteUser(fullUser);
-      try {
-        const scoring = calcFullScore(kuesResult.data);
-        setUserGrit(scoring.gritCategory.label);
-        setUserKwu(scoring.kwuCategory.label);
-        setUserKluster(scoring.kluster);
-      } catch (e) {
-        console.error("Gagal mendapatkan data kuesioner", e);
-      }
     } else {
       setSudahIsi(false);
-      setUserKluster(null);
-      setUserGrit("");
-      setUserKwu("");
     }
   }, [navigate]);
 
@@ -277,49 +253,12 @@ export default function UserLanding() {
                 className="w-full flex items-center justify-center gap-2 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-semibold transition-colors shadow-md mt-3"
               >
                 <ClipboardList className="w-4 h-4" />
-                {sudahIsi ? "Lihat Hasil Pengerjaan" : "Mulai Kuesioner"}
+                {sudahIsi ? "Lihat Detail" : "Mulai Kuesioner"}
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Hasil Kuesioner (Pengganti Partisipasi Masyarakat) */}
-            <div className="rounded-xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-sm p-4 sm:p-5 relative overflow-hidden transition-colors">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <h3 className="text-sm font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2 relative z-10">
-                <Brain className="w-5 h-5 text-blue-600" /> Hasil Pengerjaan Kuesioner Anda
-              </h3>
 
-              {sudahIsi && userKluster ? (
-                <div className="space-y-4 relative z-10">
-                  <div className={`p-4 rounded-xl border ${KLUSTER_INFO[userKluster].bg} ${KLUSTER_INFO[userKluster].border} shadow-sm relative overflow-hidden`}>
-                    <h4 className={`text-lg font-bold ${KLUSTER_INFO[userKluster].color} mb-2 leading-tight`}>
-                      {KLUSTER_INFO[userKluster].subtitle}
-                    </h4>
-                    <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
-                      {KLUSTER_INFO[userKluster].desc}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 mt-3">
-                    <button
-                      onClick={() => navigate("/kuesioner")}
-                      className="flex items-center justify-center gap-1.5 py-2.5 bg-white/60 hover:bg-white/90 text-blue-700 border border-blue-200 rounded-lg font-semibold transition-colors shadow-sm text-xs"
-                    >
-                      Baca Selengkapnya
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-6 relative z-10">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 opacity-50">
-                    <ClipboardList className="w-6 h-6 text-gray-400" />
-                  </div>
-                  <p className="text-sm font-semibold text-gray-700">Belum Ada Hasil</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Silakan kerjakan asesmen terlebih dahulu untuk melihat hasil analisis Anda.
-                  </p>
-                </div>
-              )}
-            </div>
           </motion.div>
         </div>
       </motion.main>

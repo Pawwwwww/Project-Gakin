@@ -82,7 +82,7 @@ export default function Register() {
     const dinsosData = await checkDinsosData(formData.nik);
     if (dinsosData) {
       setIsLocatingData(false);
-      return showError("NIK Anda telah terdaftar.");
+      return showError("NIK Anda terdaftar sebagai GAKIN di Dinas Sosial. Silakan langsung Login dengan NIK Anda.");
     }
 
     const data = await fetchDispendukData(formData.nik);
@@ -161,7 +161,7 @@ export default function Register() {
       return err("NIK Anda telah terdaftar otomatis oleh Dinas Sosial. Silakan langsung Login.");
     }
 
-    const newUser: UserRecord = { ...formData, isSurabaya: isSurabayaFlow === true };
+    const newUser: UserRecord = { ...formData, isSurabaya: isSurabayaFlow === true, gakinStatus: "Non-GAKIN" };
     saveUser(newUser);
     setShowSuccess(true);
   };
@@ -231,6 +231,12 @@ export default function Register() {
                           if (val.length <= 16) {
                             update("nik", val);
                             if (isSurabayaFlow) setIsNikValid(false);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (isSurabayaFlow && !isNikValid) handleCheckNIK();
                           }
                         }}
                         className={inputClass + (isSurabayaFlow && isNikValid ? " bg-slate-50/70 text-gray-500 font-semibold cursor-not-allowed" : "")} 

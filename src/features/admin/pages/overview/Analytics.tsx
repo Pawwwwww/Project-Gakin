@@ -8,10 +8,10 @@ import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { useAdvancedAnalytics } from "../../hooks/useAdvancedAnalytics";
 
 const CLUSTER_COLORS = {
-  klaster1: "#2563eb", // red-500
-  klaster2: "#f97316", // orange-500
-  klaster3: "#eab308", // yellow-500
-  klaster4: "#22c55e", // green-500
+  klaster1: "#3b82f6",
+  klaster2: "#8b5cf6",
+  klaster3: "#d946ef",
+  klaster4: "#ec4899",
 };
 
 export default function Analytics() {
@@ -37,10 +37,7 @@ export default function Analytics() {
   
   const TOTAL_PIE_VALUE = PIE_DATA.reduce((acc, curr) => acc + curr.value, 0) || 1;
 
-  const PRODUCTIVE_AGE_DATA = [
-    { age: "15-64", jumlah: stats.usiaProduktifCount },
-    { age: "Lainnya", jumlah: (stats.totalResponden - stats.usiaProduktifCount) },
-  ];
+
 
   useEffect(() => {
     setMountedPieData([]);
@@ -91,24 +88,16 @@ export default function Analytics() {
       )}
 
       {/* ── HEADER SUMMARY ── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className={`text-2xl font-bold mb-2 flex items-center gap-3 ${textPrimary}`}>
-            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 border border-blue-500/20">
-              <TrendingUp className="w-6 h-6 shadow-inner" />
-            </div>
-            Pusat Statistik Analytics
-          </h1>
-          <p className={`mt-1 ${textSecondary}`}>
-            Analisis mendetail partisipasi responden kuesioner, distribusi demografis, dan kemajuan pengisian modul.
-          </p>
-        </div>
-        <button 
-          onClick={() => navigate("/admin/analytics/demografi")}
-          className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 active:scale-95"
-        >
-          <Users className="w-4 h-4 text-emerald-100" /> Profil Socio-Ekonomi & Psikologi
-        </button>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <h1 className={`text-2xl font-bold mb-2 flex items-center gap-3 ${textPrimary}`}>
+          <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 border border-blue-500/20">
+            <TrendingUp className="w-6 h-6 shadow-inner" />
+          </div>
+          Pusat Statistik Analytics
+        </h1>
+        <p className={`mt-1 ${textSecondary}`}>
+          Analisis mendetail partisipasi responden kuesioner, distribusi demografis, dan kemajuan pengisian modul.
+        </p>
       </motion.div>
 
       {/* ── HIGHLIGHT CARDS (2 cards) ── */}
@@ -147,40 +136,11 @@ export default function Analytics() {
       </motion.div>
 
       {/* ── CHARTS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
         
-        {/* Usia Area Chart */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 flex flex-col ${cardBg}`}
-        >
-          <div className="mb-6">
-            <h3 className={`font-bold flex items-center gap-2 ${textPrimary}`}>
-              <Users className="w-5 h-5 text-blue-500" /> Demografi Usia Responden
-            </h3>
-            <p className={`text-sm mt-1 ${textSecondary}`}>Distribusi usia aktif yang mengisi kuesioner.</p>
-          </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart key={location.key} data={PRODUCTIVE_AGE_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorUsia" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
-                <XAxis dataKey="age" stroke={axisStroke} fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke={axisStroke} fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: tooltipBg, borderColor: tooltipBorder, borderRadius: '12px', color: tooltipText }} />
-                <Area type="monotone" dataKey="jumlah" name="Jumlah" stroke="#2563eb" fillOpacity={1} fill="url(#colorUsia)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
         {/* Analisis Klaster - Ring Chart */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 flex flex-col group transition-all duration-300 relative overflow-hidden ${cardBg} hover:border-blue-500/40 ${"hover:bg-white/90"}`}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 flex flex-col group transition-all duration-300 relative overflow-hidden ${cardBg} hover:border-blue-500/40 hover:bg-white/90`}
         >
           <div className={`absolute top-0 right-0 w-64 h-64 ${glowLight} blur-[80px] rounded-full pointer-events-none`} />
           
@@ -189,22 +149,24 @@ export default function Analytics() {
               <h3 className={`font-bold flex items-center gap-2 ${textPrimary}`}>
                 <Layers className="w-5 h-5 text-blue-500" /> Analisis Klaster
               </h3>
-              <p className={`text-sm mt-1 ${textSecondary}`}>Proporsi persebaran responden di 4 klaster utama.</p>
+              <p className={`text-sm mt-1 mb-2 ${textSecondary}`}>Proporsi klaster keseluruhan.</p>
             </div>
             {/* CTA Indicator */}
             <div onClick={() => navigate("/admin/analytics/cluster-detail")}
-              className={`w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 cursor-pointer transition-all border ${"bg-blue-50 hover:bg-blue-100 border-blue-200"}`}
+              className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center hover:scale-110 cursor-pointer transition-all border ${detailBg}`}
             >
-              <ArrowRight className="w-5 h-5 text-blue-500 pointer-events-none" />
+              <ArrowRight className="w-4 h-4 text-blue-500 pointer-events-none" />
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col sm:flex-row items-center gap-6 relative z-10">
-            <div className="w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] relative shrink-0">
+          <div className="flex-1 flex flex-col relative z-10 mt-1">
+            <div className="w-full h-[180px] relative shrink-0 mx-auto">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart key={`pie-${location.key}`}>
                   <Tooltip cursor={false} contentStyle={{ backgroundColor: tooltipBg, borderColor: tooltipBorder, borderRadius: '12px', color: tooltipText }} itemStyle={{ color: tooltipText }} />
                   <Pie data={mountedPieData} innerRadius="65%" outerRadius="90%" paddingAngle={3} dataKey="value" stroke="none"
+                    animationDuration={1500}
+                    animationEasing="ease-out"
                     onMouseEnter={(_, index) => setActivePieIndex(index)}
                     onMouseLeave={() => setActivePieIndex(-1)}>
                     {PIE_DATA.map((entry, index) => (
@@ -217,22 +179,22 @@ export default function Analytics() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className={`text-3xl font-black ${textPrimary}`}>4</span>
-                <span className={`text-xs font-semibold uppercase tracking-wider ${textSecondary}`}>Klaster</span>
+                <span className={`text-3xl font-black ${textPrimary}`}>{stats.totalResponden}</span>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider ${textSecondary}`}>Total</span>
               </div>
             </div>
 
-            <div className="flex-1 flex flex-col justify-center gap-3 w-full">
+            <div className="grid grid-cols-2 gap-2 w-full mt-4">
               {PIE_DATA.map((item, i) => (
                 <div key={i} onMouseEnter={() => setActivePieIndex(i)} onMouseLeave={() => setActivePieIndex(-1)}
-                  className={`flex items-center justify-between p-2.5 rounded-lg border transition-all duration-300 ${activePieIndex === i ? `${detailBg} scale-105 shadow-md` : `${"bg-white border-gray-200"}`}`}
+                  className={`flex items-center justify-between p-2 rounded-lg border transition-all duration-300 ${activePieIndex === i ? `${detailBg} scale-105 shadow-sm` : `bg-white border-gray-100`}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-3.5 h-3.5 rounded-full shadow-inner" style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}80` }} />
-                    <span className={`text-sm font-semibold ${textPrimary}`}>{item.name}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className={`text-[11px] font-semibold ${textPrimary}`}>{item.name}</span>
                   </div>
-                  <span className={`font-bold px-2 py-0.5 rounded text-sm ${"text-gray-900 bg-gray-100"}`}>
-                    {((item.value / TOTAL_PIE_VALUE) * 100).toFixed(1)}%
+                  <span className={`font-bold px-1.5 py-0.5 rounded text-[10px] text-gray-900 bg-gray-100`}>
+                    {((item.value / TOTAL_PIE_VALUE) * 100).toFixed(0)}%
                   </span>
                 </div>
               ))}
@@ -240,23 +202,140 @@ export default function Analytics() {
           </div>
         </motion.div>
 
+        {/* Profil Demografi (Large Card) */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 flex flex-col group transition-all duration-300 relative overflow-hidden lg:col-span-2 ${cardBg} hover:border-emerald-500/40 hover:bg-white/90`}
+        >
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-600/5 blur-[100px] rounded-full pointer-events-none" />
+          
+          <div className="mb-4 relative z-10 flex justify-between items-start">
+            <div>
+              <h3 className={`text-xl font-black flex items-center gap-2 ${textPrimary}`}>
+                <Brain className="w-6 h-6 text-emerald-500" /> Profil Responden & Socio-Ekonomi
+              </h3>
+              <p className={`text-sm mt-1 ${textSecondary}`}>Analisis karakteristik psikologi dan sebaran bidang usaha responden.</p>
+            </div>
+            <div onClick={() => navigate("/admin/analytics/demografi")}
+              className={`px-5 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition-all border bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border-emerald-200 cursor-pointer shadow-sm`}
+            >
+              Lihat Detail Demografi <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 relative z-10 flex-1 pt-4 border-t border-gray-100/50">
+             {/* Left side: Age Stats Percentage */}
+             <div className="space-y-6">
+                <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                   <Users className="w-3.5 h-3.5" /> Ringkasan Usia
+                </h4>
+                
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm relative overflow-hidden group">
+                    <div className="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                      <Users className="w-16 h-16 text-blue-600" />
+                    </div>
+                    <span className="block text-[10px] font-black text-blue-500 uppercase mb-1">Usia Produktif</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-black text-blue-700">{stats.usiaProduktifPct}%</span>
+                      <span className="text-xs font-bold text-blue-400">({stats.usiaProduktifCount} jiwa)</span>
+                    </div>
+                    <div className="mt-3 w-full h-1.5 bg-white/50 rounded-full overflow-hidden">
+                       <motion.div initial={{ width: 0 }} animate={{ width: `${stats.usiaProduktifPct}%` }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm relative overflow-hidden group">
+                    <span className="block text-[10px] font-black text-gray-400 uppercase mb-1">Non-Produktif</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-gray-600">{100 - stats.usiaProduktifPct}%</span>
+                      <span className="text-[10px] font-bold text-gray-400">({stats.totalResponden - stats.usiaProduktifCount} jiwa)</span>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-2 leading-tight">Data mencakup responden di bawah 15 tahun dan di atas 64 tahun.</p>
+                  </div>
+                </div>
+             </div>
+
+             {/* Middle side: Psychology Highlights */}
+             <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Karakteristik Psikologi</h4>
+                <div className="grid grid-cols-1 gap-2.5">
+                   {[
+                     { label: "Grit (Kegigihan)", sub: "Dominasi Tinggi", value: advancedStats.radarData[0]?.Total || 0, color: "blue" },
+                     { label: "KWU (Jiwa Usaha)", sub: "Dominasi Tinggi", value: advancedStats.radarData[6]?.Total || 0, color: "emerald" },
+                     { label: "Personality (TIPI)", sub: "Kestabilan Emosi", value: advancedStats.radarData[3]?.Total || 0, color: "violet" },
+                   ].map((item, i) => {
+                     const pct = (item.value / Math.max(stats.totalResponden, 1)) * 100;
+                     return (
+                       <div key={i} className="p-3 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center gap-3 transition-transform hover:scale-[1.02]">
+                          <div className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center font-black text-[11px] text-${item.color}-600 bg-${item.color}-50 border border-${item.color}-100`}>
+                            {pct.toFixed(0)}%
+                          </div>
+                          <div>
+                            <div className="text-[11px] font-bold text-gray-800 leading-tight">{item.label}</div>
+                            <div className="text-[9px] font-medium text-gray-500">{item.sub}</div>
+                          </div>
+                       </div>
+                     )
+                   })}
+                </div>
+             </div>
+
+             {/* Right side: Top Business Fields */}
+             <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Sektor Usaha Terpopuler</h4>
+                <div className="flex flex-col gap-4">
+                  {advancedStats.businessData.slice(0, 4).map((b, i) => {
+                    const colors = ["bg-emerald-500", "bg-blue-500", "bg-violet-500", "bg-amber-500"];
+                    const totalUsers = Math.max(stats.totalResponden, 1);
+                    const pct = (b.value / totalUsers) * 100;
+                    
+                    return (
+                      <div key={i} className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center text-xs">
+                           <span className="font-bold text-gray-700 capitalize flex items-center gap-2 truncate max-w-[120px]">
+                             <div className={`w-1.5 h-1.5 rounded-full ${colors[i % colors.length]}`} /> {b.name}
+                           </span>
+                           <div className="flex items-center gap-2 text-[10px] shrink-0">
+                             <span className="font-bold text-gray-500">{pct.toFixed(1)}%</span>
+                             <span className="text-gray-400 font-medium">({b.value})</span>
+                           </div>
+                        </div>
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                           <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1, delay: 0.5 + (i * 0.1) }} className={`h-full ${colors[i % colors.length]}`} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+             </div>
+          </div>
+        </motion.div>
+
+
+
         {/* Tren Klaster Per Bulan - Area Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 flex flex-col lg:col-span-2 relative overflow-hidden ${cardBg}`}
+          className={`shadow-sm backdrop-blur-xl rounded-2xl shadow-lg border p-6 flex flex-col lg:col-span-3 relative overflow-hidden ${cardBg}`}
         >
-          <div className="mb-6 relative z-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 relative z-10 w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h3 className={`font-bold flex items-center gap-2 ${textPrimary}`}>
                 <TrendingUp className="w-5 h-5 text-blue-500" /> Tren Klaster Per Bulan
               </h3>
               <p className={`text-sm mt-1 ${textSecondary}`}>Perkembangan jumlah responden per klaster setiap bulan.</p>
             </div>
-            <div className={`hidden sm:flex items-center gap-4 mt-2 sm:mt-0 px-4 py-2 shadow-sm rounded-xl border ${"bg-white border-gray-300"}`}>
-              {[1, 2, 3, 4].map((klaster) => (
-                <div key={klaster} className={`flex items-center gap-2 text-xs font-medium ${"text-gray-700"}`}>
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CLUSTER_COLORS[`klaster${klaster}` as keyof typeof CLUSTER_COLORS] }}></span> K{klaster}
-                </div>
-              ))}
+            
+            <div className="flex items-center gap-3">
+              <div className={`hidden sm:flex items-center gap-4 px-4 py-2 shadow-sm rounded-xl border ${"bg-white border-gray-300"}`}>
+                {[1, 2, 3, 4].map((klaster) => (
+                  <div key={klaster} className={`flex items-center gap-2 text-xs font-medium ${"text-gray-700"}`}>
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CLUSTER_COLORS[`klaster${klaster}` as keyof typeof CLUSTER_COLORS] }}></span> K{klaster}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => navigate("/admin/analytics/trend")} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-md border hover:border-transparent border-blue-400 text-sm font-bold transition-all hover:scale-105 active:scale-95 group">
+                Filter Detail Tren <ArrowRight className="w-4 h-4 text-blue-100 group-hover:translate-x-0.5 transition-transform" />
+              </button>
             </div>
           </div>
           

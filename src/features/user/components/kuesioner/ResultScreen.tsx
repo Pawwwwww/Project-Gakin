@@ -1,41 +1,14 @@
 // Extracted from Kuesioner.tsx — Result screen after kuesioner submission
 
 import { useState, useEffect } from "react";
-import { Check, Home, Award } from "lucide-react";
+import { Check, Home } from "lucide-react";
 import { motion } from "framer-motion";
-import { findUserByNIK, UserRecord } from "../../../../services/StorageService";
-import {
-  KLUSTER_INFO_RESULT,
-  type KuesionerData, type TIPIAspect,
-} from "../../../../entities/respondent";
-import {
-  calcGritScore, getGritCategory, calcKwuScore, getKwuCategory,
-  calcTIPIAspects, getTIPICategoryLabel, determineKluster,
-} from "../../../../services/ScoringService";
-
-const KLUSTER_INFO = KLUSTER_INFO_RESULT;
+import { type KuesionerData } from "../../../../entities/respondent";
 
 export function ResultScreen({ data, userNIK, userName, onBack }: {
   data: KuesionerData; userNIK: string; userName: string; onBack: () => void;
 }) {
-  // We no longer need completeUser on result screen
-  // useEffect(() => {
-  //   const user = findUserByNIK(userNIK);
-  //   if (user) setCompleteUser(user);
-  // }, [userNIK]);
-
-  const gritScore = calcGritScore(data.grit);
-  const gritCat = getGritCategory(gritScore);
-  const kwuScore = calcKwuScore(data.kwu);
-  const kwuCat = getKwuCategory(kwuScore);
-  const tipiAspects = calcTIPIAspects(data.tipi);
-  const tipiCats = (Object.keys(tipiAspects) as TIPIAspect[]).reduce((acc, aspect) => {
-    acc[aspect] = getTIPICategoryLabel(aspect, tipiAspects[aspect]);
-    return acc;
-  }, {} as Record<TIPIAspect, string>);
-
-  const kluster = determineKluster(gritCat.label, kwuCat.label, tipiCats);
-  const klusterInfo = KLUSTER_INFO[kluster];
+  // We no longer calculate or show the score to the user.
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -75,18 +48,12 @@ export function ResultScreen({ data, userNIK, userName, onBack }: {
         </div>
       </motion.div>
 
-      {/* Hasil Asesmen (Cluster) */}
-      <motion.div variants={itemVariants} className="rounded-2xl border border-white/40 bg-white/30 backdrop-blur-xl p-4 sm:p-6 shadow-lg transition-colors">
-        <div className="flex items-start gap-3 sm:gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/50 backdrop-blur-md border border-white/60 shadow-md">
-            <Award className={`w-6 h-6 sm:w-7 sm:h-7 ${klusterInfo.color}`} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Hasil Pengisian Anda</p>
-            <h3 className={`text-lg sm:text-xl font-bold ${klusterInfo.color}`}>{klusterInfo.subtitle}</h3>
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mt-2">{klusterInfo.desc}</p>
-          </div>
-        </div>
+      {/* Ucapan Terima Kasih */}
+      <motion.div variants={itemVariants} className="rounded-2xl border border-white/40 bg-white/30 backdrop-blur-xl p-6 sm:p-8 shadow-lg transition-colors text-center flex flex-col items-center gap-4">
+        <h3 className="text-xl sm:text-2xl font-bold text-green-700">Terima Kasih Atas Partisipasi Anda!</h3>
+        <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-medium max-w-xl mx-auto">
+          Kami sangat menghargai waktu dan kesediaan Anda dalam mengisi kuesioner ini. Jawaban Anda sangat berguna dan akan membantu Pemerintah Kota Surabaya merancang program inovasi dan pemberdayaan masyarakat yang lebih tepat sasaran.
+        </p>
       </motion.div>
       {/* Footer note */}
       <motion.div variants={itemVariants} className="rounded-xl border border-white/40 bg-white/20 backdrop-blur-xl p-4 text-center">

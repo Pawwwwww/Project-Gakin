@@ -67,7 +67,7 @@ export function RecentSubmissionsTable() {
   const textPrimary = "text-gray-900";
   const textSecondary = "text-gray-600";
   const rowHover = "hover:bg-gray-50 border-gray-200";
-  const tableHeader = "bg-gray-200/50 text-gray-700 border-y border-gray-300";
+  const tableHeader = "border-b border-t border-gray-300 text-gray-700 bg-gray-100/50";
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
@@ -87,7 +87,7 @@ export function RecentSubmissionsTable() {
       </div>
       
       <div className={`divide-y flex-1 ${"divide-gray-100"}`}>
-        <div className={`grid grid-cols-12 gap-4 px-6 py-3 text-xs font-semibold uppercase tracking-wider ${tableHeader}`}>
+        <div className={`grid grid-cols-12 gap-4 px-6 py-3 font-semibold text-[13px] ${tableHeader}`}>
           <div className="col-span-4 sm:col-span-4">Nama & NIK</div>
           <div className="col-span-3 sm:col-span-3">Kecamatan</div>
           <div className="col-span-3 sm:col-span-3">Kelurahan</div>

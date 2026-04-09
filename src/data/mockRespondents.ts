@@ -1,5 +1,5 @@
-import { HARDCODED_USERS } from './hardcodedData';
-import { MOCK_DISPENDUK_DB } from './dispendukcapil';
+import { MOCK_USERS } from "./mockData";
+import { getUsers } from "../services/StorageService";
 
 function calcAge(tanggalLahir: string): number {
   if (!tanggalLahir) return 30;
@@ -10,40 +10,68 @@ function calcAge(tanggalLahir: string): number {
   return age;
 }
 
-// All Excel data = GAKIN
-const gakinRows = HARDCODED_USERS.map((u, i) => ({
-  id: i + 1,
-  nik: u.nik,
-  nama: u.fullName,
-  kecamatan: u.kecamatanKtp || "Surabaya",
-  kelurahan: u.kelurahanKtp || "Surabaya",
-  usia: calcAge(u.tanggalLahir),
-  type: "GAKIN" as const,
-  jenisKelamin: u.jenisKelamin || "Laki-laki",
-  phone: u.phone,
-  pendidikan: u.pendidikan || "-",
-  agama: u.agama || "-",
-}));
+export function getDataItems() {
+  // GAKIN dari MOCK_USERS (static mock data)
+  const gakinNiks = new Set<string>();
+  const gakinItems = MOCK_USERS
+    .filter(u => u.gakinStatus === "GAKIN")
+    .map((u, i) => {
+      gakinNiks.add(u.nik);
+      return {
+        id: i + 1,
+        nik: u.nik,
+        nama: u.fullName,
+        kecamatan: u.kecamatanKtp || "Surabaya",
+        kelurahan: u.kelurahanKtp || "Surabaya",
+        usia: calcAge(u.tanggalLahir),
+        type: "GAKIN" as const,
+        jenisKelamin: u.jenisKelamin || "Laki-laki",
+        phone: u.phone || "-",
+        pendidikan: u.pendidikan || "-",
+        agama: u.agama || "-",
+      };
+    });
 
-// Dispendukcapil entries that are NOT already in gakin list = Non-GAKIN
-const gakinNIKs = new Set(HARDCODED_USERS.map(u => u.nik));
-const nonGakinRows = MOCK_DISPENDUK_DB
-  .filter(d => !gakinNIKs.has(d.nik))
-  .map((d, i) => ({
-    id: HARDCODED_USERS.length + i + 1,
-    nik: d.nik,
-    nama: d.fullName,
-    kecamatan: d.kecamatanKtp,
-    kelurahan: d.kelurahanKtp,
-    usia: calcAge(d.tanggalLahir),
-    type: "Non-GAKIN" as const,
-    jenisKelamin: d.jenisKelamin,
-    phone: "-",
-    pendidikan: "-",
-    agama: "-",
-  }));
+  // GAKIN yang ditambahkan via admin (ada di localStorage tapi BUKAN dari MOCK_USERS)
+  const registeredUsers = getUsers();
+  const addedGakin = registeredUsers
+    .filter(u => u.gakinStatus === "GAKIN" && !gakinNiks.has(u.nik))
+    .map((u, i) => ({
+      id: gakinItems.length + i + 1,
+      nik: u.nik,
+      nama: u.fullName,
+      kecamatan: u.kecamatanKtp || "Surabaya",
+      kelurahan: u.kelurahanKtp || "Surabaya",
+      usia: calcAge(u.tanggalLahir),
+      type: "GAKIN" as const,
+      jenisKelamin: u.jenisKelamin || "Laki-laki",
+      phone: u.phone || "-",
+      pendidikan: u.pendidikan || "-",
+      agama: u.agama || "-",
+    }));
 
-export const INITIAL_DATA = [...gakinRows, ...nonGakinRows];
+  // Non-GAKIN: hanya yang sudah register (ada di localStorage)
+  const allGakinCount = gakinItems.length + addedGakin.length;
+  const nonGakinRegistered = registeredUsers
+    .filter(u => u.gakinStatus !== "GAKIN")
+    .map((u, i) => ({
+      id: allGakinCount + i + 1,
+      nik: u.nik,
+      nama: u.fullName,
+      kecamatan: u.kecamatanKtp || "Surabaya",
+      kelurahan: u.kelurahanKtp || "Surabaya",
+      usia: calcAge(u.tanggalLahir),
+      type: "Non-GAKIN" as const,
+      jenisKelamin: u.jenisKelamin || "Laki-laki",
+      phone: u.phone || "-",
+      pendidikan: u.pendidikan || "-",
+      agama: u.agama || "-",
+    }));
 
-export type DataItem = typeof INITIAL_DATA[0];
+  return [...gakinItems, ...addedGakin, ...nonGakinRegistered];
+}
 
+// Keep backward compat export
+export const INITIAL_DATA = getDataItems();
+
+export type DataItem = ReturnType<typeof getDataItems>[0];

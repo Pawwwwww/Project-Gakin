@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ClipboardList, Users, SlidersHorizontal, Check, MapPin, ChevronDown } from "lucide-react";
+import { Search, ClipboardList, Users, SlidersHorizontal, Check, MapPin, ChevronDown, Filter, X } from "lucide-react";
 import { AdminLayout } from "../../components/AdminLayout";
 import { motion, AnimatePresence } from "motion/react";
-import { getUsers, getKuesionerResult } from "../../../../services/StorageService";
-import type { UserRecord } from "../../../../services/StorageService";
+import { getKuesionerResult } from "../../../../services/StorageService";
+import { getDataItems, type DataItem as RawDataItem } from "../../../../data/mockRespondents";
 
 interface DataItem {
   nik: string;
@@ -19,25 +19,15 @@ interface DataItem {
   hasFilledKuesioner: boolean;
 }
 
-function calcUsia(tanggalLahir: string): number {
-  if (!tanggalLahir) return 0;
-  const bday = new Date(tanggalLahir);
-  const today = new Date();
-  let age = today.getFullYear() - bday.getFullYear();
-  const m = today.getMonth() - bday.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < bday.getDate())) age--;
-  return age;
-}
-
 function buildDataItems(): DataItem[] {
-  const users = getUsers();
-  return users.map((u: UserRecord): DataItem => ({
+  const rawItems = getDataItems();
+  return rawItems.map((u): DataItem => ({
     nik:      u.nik,
-    nama:     u.fullName,
-    kecamatan: u.kecamatanKtp || u.kecamatanDomisili || "-",
-    kelurahan: u.kelurahanKtp || u.kelurahanDomisili || "-",
-    type:     (u.gakinStatus as "GAKIN" | "Non-GAKIN") || "Non-GAKIN",
-    usia:     calcUsia(u.tanggalLahir),
+    nama:     u.nama,
+    kecamatan: u.kecamatan || "-",
+    kelurahan: u.kelurahan || "-",
+    type:     u.type as "GAKIN" | "Non-GAKIN",
+    usia:     u.usia,
     jenisKelamin: u.jenisKelamin || "-",
     phone:    u.phone || "-",
     pendidikan: u.pendidikan || "-",
@@ -48,28 +38,49 @@ function buildDataItems(): DataItem[] {
 
 type ColumnKey = "nama" | "nik" | "kecamatan" | "kelurahan" | "type" | "usia" | "jenisKelamin" | "phone" | "pendidikan" | "agama" | "status";
 const ALL_COLUMNS: { key: ColumnKey; label: string; sortable?: boolean }[] = [
-  { key: "nama", label: "Nama Lengkap" },
+  { key: "nama", label: "Nama Lengkap", sortable: true },
   { key: "nik", label: "NIK", sortable: true },
-  { key: "type", label: "Tipe Data", sortable: true },
-  { key: "usia", label: "Usia", sortable: true },
+  { key: "type", label: "Tipe Data" },
+  { key: "usia", label: "Usia" },
   { key: "jenisKelamin", label: "Jenis Kelamin" },
-  { key: "kecamatan", label: "Kecamatan", sortable: true },
-  { key: "kelurahan", label: "Kelurahan", sortable: true },
+  { key: "kecamatan", label: "Kecamatan" },
+  { key: "kelurahan", label: "Kelurahan" },
   { key: "phone", label: "No. Telepon" },
   { key: "pendidikan", label: "Pendidikan" },
   { key: "agama", label: "Agama" },
-  { key: "status", label: "Status Kuesioner", sortable: true },
+  { key: "status", label: "Status Kuesioner" },
 ];
 
 const DEFAULT_VISIBLE = new Set<ColumnKey>(["nama", "nik", "kecamatan", "type", "status"]);
 
-export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] = useState("");
+export default function StatusKuesioner() {
+  const [searchTerm, setSearchTerm] = useState("");
   const [sortCol, setSortCol] = useState<ColumnKey | "">("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const [visibleColsSet, setVisibleColsSet] = useState<Set<ColumnKey>>(new Set(DEFAULT_VISIBLE));
   const [showColDropdown, setShowColDropdown] = useState(false);
   const colDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [kecFilter, setKecFilter] = useState<string>("");
+  const [kelFilter, setKelFilter] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+
+  const [showKecDropdown, setShowKecDropdown] = useState(false);
+  const [showKelDropdown, setShowKelDropdown] = useState(false);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+
+  const kecBtnRef = useRef<HTMLButtonElement>(null);
+  const kelBtnRef = useRef<HTMLButtonElement>(null);
+  const typeBtnRef = useRef<HTMLButtonElement>(null);
+  const statusBtnRef = useRef<HTMLButtonElement>(null);
+
+  const kecDropdownRef = useRef<HTMLDivElement>(null);
+  const kelDropdownRef = useRef<HTMLDivElement>(null);
+  const typeDropdownRef = useRef<HTMLDivElement>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,12 +90,42 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       if (colDropdownRef.current && !colDropdownRef.current.contains(target)) setShowColDropdown(false);
+      if (kecDropdownRef.current && !kecDropdownRef.current.contains(target) && kecBtnRef.current && !kecBtnRef.current.contains(target)) {
+        setShowKecDropdown(false);
+      }
+      if (kelDropdownRef.current && !kelDropdownRef.current.contains(target) && kelBtnRef.current && !kelBtnRef.current.contains(target)) {
+        setShowKelDropdown(false);
+      }
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(target) && typeBtnRef.current && !typeBtnRef.current.contains(target)) {
+        setShowTypeDropdown(false);
+      }
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(target) && statusBtnRef.current && !statusBtnRef.current.contains(target)) {
+        setShowStatusDropdown(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const allData: DataItem[] = buildDataItems();
+  const [allData, setAllData] = useState<DataItem[]>(() => buildDataItems());
+
+  // Real-time sync: refresh when localStorage changes or tab regains focus
+  useEffect(() => {
+    setAllData(buildDataItems());
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "users") setAllData(buildDataItems());
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") setAllData(buildDataItems());
+    };
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   const userRole = localStorage.getItem("role");
   const adminKecamatan = localStorage.getItem("adminKecamatan");
 
@@ -92,8 +133,16 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
     if (userRole === "camat" && adminKecamatan) {
       if (item.kecamatan.toLowerCase() !== adminKecamatan.toLowerCase()) return false;
     }
+    if (kecFilter && item.kecamatan !== kecFilter) return false;
+    if (kelFilter && item.kelurahan !== kelFilter) return false;
+    if (typeFilter && item.type !== typeFilter) return false;
+    if (statusFilter === "Sudah Mengisi" && !item.hasFilledKuesioner) return false;
+    if (statusFilter === "Belum Mengisi" && item.hasFilledKuesioner) return false;
     return item.nama.toLowerCase().includes(searchTerm.toLowerCase()) || item.nik.includes(searchTerm);
   });
+
+  const allKecamatans = [...new Set(allData.map(d => d.kecamatan))].sort();
+  const allKelurahans = [...new Set(allData.map(d => d.kelurahan))].sort();
 
   if (sortCol) {
     filteredData = [...filteredData].sort((a: DataItem, b: DataItem) => {
@@ -114,7 +163,23 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + rowsPerPage);
   
-  const getPageNumbers = () => { const p: number[] = []; for (let i = 1; i <= totalPages; i++) p.push(i); return p; };
+  // Smart ellipsis pagination — always shows first, last, current ±2, with '...' gaps
+  const getPaginationItems = (): (number | "...")[] => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+    const items: (number | "...")[] = [1];
+    if (range[0] > 2) items.push("...");
+    items.push(...range);
+    if (range[range.length - 1] < totalPages - 1) items.push("...");
+    items.push(totalPages);
+    return items;
+  };
   const handleRowsChange = (val: number) => { setRowsPerPage(val); setCurrentPage(1); };
 
   const handleSort = (col: ColumnKey) => {
@@ -133,6 +198,12 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
   const availableColumns = userRole === "camat" ? ALL_COLUMNS.filter(c => c.key !== "kecamatan") : ALL_COLUMNS;
   const displayCols = availableColumns.map(c => c.key).filter(c => visibleColsSet.has(c));
 
+  const getDropdownPos = (ref: React.RefObject<HTMLButtonElement | null>) => {
+    if (!ref.current) return { top: 0, left: 0 };
+    const rect = ref.current.getBoundingClientRect();
+    return { top: rect.bottom + 8, left: rect.left };
+  };
+
   // ── THEME CLASSES ──
   const textPrimary   = "text-gray-900";
   const textSecondary = "text-gray-600";
@@ -143,7 +214,7 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
   const rowHoverBg    = "hover:bg-gray-50 shadow-sm";
   const inputBg       = "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 hover:border-gray-400";
   const btnOutline    = "bg-white border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-sm";
-  const tableHeader   = "bg-gray-100/80 text-gray-600 border-gray-300";
+  const tableHeader   = "border-b border-gray-300 text-gray-700 bg-gray-100/50";
 
   const renderCellContent = (item: DataItem, col: ColumnKey) => {
     switch (col) {
@@ -196,46 +267,132 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
             className={`w-full pl-10 pr-4 py-2.5 shadow-sm backdrop-blur-md rounded-xl focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm transition-all outline-none border ${inputBg}`} />
         </div>
         
-        <div className="relative" ref={colDropdownRef}>
-          <button onClick={() => setShowColDropdown(!showColDropdown)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm backdrop-blur-md border transition-all ${btnOutline}`}>
-            <SlidersHorizontal className="w-4 h-4" /> Columns
-          </button>
-          <AnimatePresence>
-            {showColDropdown && (
-              <motion.div initial={{ opacity: 0, y: -5, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.95 }} transition={{ duration: 0.15 }}
-                className={`absolute right-0 top-full mt-2 w-56 shadow-2xl backdrop-blur-2xl border rounded-2xl z-50 py-2 overflow-hidden ${bgCard}`}>
-                <p className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b mb-1 ${textSecondary} ${borderCol}`}>Toggle columns</p>
-                <div className="overflow-y-auto max-h-[50vh]">
-                  {availableColumns.map(col => (
-                    <button key={col.key} onClick={() => toggleColumn(col.key)}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 ${dropdownHover}`}>
-                      <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${visibleColsSet.has(col.key) ? "bg-blue-500/80 border-blue-500/50 shadow-sm" : `border-gray-300 ${"bg-white"}`}`}>
-                        {visibleColsSet.has(col.key) && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                      <span className={visibleColsSet.has(col.key) ? textPrimary : textSecondary}>{col.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className="flex items-center gap-3">
+          {(kecFilter || kelFilter || typeFilter || statusFilter) && (
+            <button onClick={() => { setKecFilter(""); setKelFilter(""); setTypeFilter(""); setStatusFilter(""); setCurrentPage(1); }}
+              className="text-xs text-blue-500 hover:text-blue-400 transition-colors flex items-center gap-1"><X className="w-3 h-3" /> Reset filter</button>
+          )}
+          <div className="relative" ref={colDropdownRef}>
+            <button onClick={() => setShowColDropdown(!showColDropdown)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm backdrop-blur-md border transition-all ${btnOutline}`}>
+              <SlidersHorizontal className="w-4 h-4" /> Columns
+            </button>
+            <AnimatePresence>
+              {showColDropdown && (
+                <motion.div initial={{ opacity: 0, y: -5, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.95 }} transition={{ duration: 0.15 }}
+                  className={`absolute right-0 top-full mt-2 w-56 shadow-2xl backdrop-blur-2xl border rounded-2xl z-50 py-2 overflow-hidden ${bgCard}`}>
+                  <p className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b mb-1 ${textSecondary} ${borderCol}`}>Toggle columns</p>
+                  <div className="overflow-y-auto max-h-[50vh]">
+                    {availableColumns.map(col => (
+                      <button key={col.key} onClick={() => toggleColumn(col.key)}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 hover:bg-gray-50`}>
+                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${visibleColsSet.has(col.key) ? "bg-blue-500/80 border-blue-500/50 shadow-sm" : `border-gray-300 ${"bg-white"}`}`}>
+                          {visibleColsSet.has(col.key) && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <span className={visibleColsSet.has(col.key) ? textPrimary : textSecondary}>{col.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
+      {/* ── FIXED FILTER DROPDOWNS ── */}
+      {showKecDropdown && (
+        <div ref={kecDropdownRef} className="fixed z-[200] w-56 bg-white/95 backdrop-blur-2xl border border-gray-200 rounded-2xl shadow-2xl shadow-gray-300/40 py-2 max-h-60 overflow-y-auto" style={{ top: getDropdownPos(kecBtnRef).top, left: getDropdownPos(kecBtnRef).left }}>
+          <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 mb-1">Kecamatan</p>
+          <button onClick={() => { setKecFilter(""); setShowKecDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${!kecFilter ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>Semua{!kecFilter && <Check className="w-4 h-4 text-blue-500" />}</button>
+          {allKecamatans.map(k => <button key={k} onClick={() => { setKecFilter(k); setShowKecDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${kecFilter === k ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>{k}{kecFilter === k && <Check className="w-4 h-4 text-blue-500" />}</button>)}
+        </div>
+      )}
+      {showKelDropdown && (
+        <div ref={kelDropdownRef} className="fixed z-[200] w-56 bg-white/95 backdrop-blur-2xl border border-gray-200 rounded-2xl shadow-2xl shadow-gray-300/40 py-2 max-h-60 overflow-y-auto" style={{ top: getDropdownPos(kelBtnRef).top, left: getDropdownPos(kelBtnRef).left }}>
+          <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 mb-1">Kelurahan</p>
+          <button onClick={() => { setKelFilter(""); setShowKelDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${!kelFilter ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>Semua{!kelFilter && <Check className="w-4 h-4 text-blue-500" />}</button>
+          {allKelurahans.map(k => <button key={k} onClick={() => { setKelFilter(k); setShowKelDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${kelFilter === k ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>{k}{kelFilter === k && <Check className="w-4 h-4 text-blue-500" />}</button>)}
+        </div>
+      )}
+      {showTypeDropdown && (
+        <div ref={typeDropdownRef} className="fixed z-[200] w-56 bg-white/95 backdrop-blur-2xl border border-gray-200 rounded-2xl shadow-2xl shadow-gray-300/40 py-2 max-h-60 overflow-y-auto" style={{ top: getDropdownPos(typeBtnRef).top, left: getDropdownPos(typeBtnRef).left }}>
+          <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 mb-1">Tipe Data</p>
+          <button onClick={() => { setTypeFilter(""); setShowTypeDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${!typeFilter ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>Semua{!typeFilter && <Check className="w-4 h-4 text-blue-500" />}</button>
+          {["GAKIN", "Non-GAKIN"].map(k => <button key={k} onClick={() => { setTypeFilter(k); setShowTypeDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${typeFilter === k ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>{k}{typeFilter === k && <Check className="w-4 h-4 text-blue-500" />}</button>)}
+        </div>
+      )}
+      {showStatusDropdown && (
+        <div ref={statusDropdownRef} className="fixed z-[200] w-56 bg-white/95 backdrop-blur-2xl border border-gray-200 rounded-2xl shadow-2xl shadow-gray-300/40 py-2 max-h-60 overflow-y-auto" style={{ top: getDropdownPos(statusBtnRef).top, left: getDropdownPos(statusBtnRef).left }}>
+          <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 mb-1">Status Kuesioner</p>
+          <button onClick={() => { setStatusFilter(""); setShowStatusDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${!statusFilter ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>Semua{!statusFilter && <Check className="w-4 h-4 text-blue-500" />}</button>
+          {["Sudah Mengisi", "Belum Mengisi"].map(k => <button key={k} onClick={() => { setStatusFilter(k); setShowStatusDropdown(false); setCurrentPage(1); }} className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${statusFilter === k ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>{k}{statusFilter === k && <Check className="w-4 h-4 text-blue-500" />}</button>)}
+        </div>
+      )}
+
       {/* ── TABLE ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className={`shadow-sm backdrop-blur-xl border rounded-2xl overflow-hidden ${bgTableCard}`}>
+        className={`shadow-sm backdrop-blur-xl border rounded-2xl overflow-hidden ${bgTableCard}`} onClick={() => { setShowKecDropdown(false); setShowKelDropdown(false); setShowTypeDropdown(false); setShowStatusDropdown(false); }}>
         <div className="overflow-x-auto dark-scrollbar pb-2">
           <table className="w-full text-left whitespace-nowrap min-w-[700px]">
-            <thead className={`border-b tracking-wider uppercase ${tableHeader}`}>
+            <thead className={`font-semibold text-[13px] ${tableHeader}`}>
               <tr>
+                <th className="px-6 py-4">No</th>
                 {displayCols.map((colKey) => {
                   const colDef = ALL_COLUMNS.find(c => c.key === colKey)!;
                   const isSorted = sortCol === colKey;
+
+                  if (colKey === "kecamatan") {
+                    return (
+                      <th key={colKey} className="px-6 py-4 transition-colors select-none">
+                        <button ref={kecBtnRef} onClick={(e) => { e.stopPropagation(); setShowKecDropdown(!showKecDropdown); setShowKelDropdown(false); setShowTypeDropdown(false); setShowStatusDropdown(false); }}
+                          className="flex items-center gap-1 hover:text-blue-500 transition-colors outline-none text-inherit font-inherit">
+                          {colDef.label} {kecFilter && <span className="text-blue-500 text-[10px]">●</span>}
+                          <Filter className="w-3 h-3 ml-1 text-gray-400" />
+                        </button>
+                      </th>
+                    );
+                  }
+
+                  if (colKey === "kelurahan") {
+                    return (
+                      <th key={colKey} className="px-6 py-4 transition-colors select-none">
+                        <button ref={kelBtnRef} onClick={(e) => { e.stopPropagation(); setShowKelDropdown(!showKelDropdown); setShowKecDropdown(false); setShowTypeDropdown(false); setShowStatusDropdown(false); }}
+                          className="flex items-center gap-1 hover:text-blue-500 transition-colors outline-none text-inherit font-inherit">
+                          {colDef.label} {kelFilter && <span className="text-blue-500 text-[10px]">●</span>}
+                          <Filter className="w-3 h-3 ml-1 text-gray-400" />
+                        </button>
+                      </th>
+                    );
+                  }
+
+                  if (colKey === "type") {
+                    return (
+                      <th key={colKey} className="px-6 py-4 transition-colors select-none">
+                        <button ref={typeBtnRef} onClick={(e) => { e.stopPropagation(); setShowTypeDropdown(!showTypeDropdown); setShowKecDropdown(false); setShowKelDropdown(false); setShowStatusDropdown(false); }}
+                          className="flex items-center gap-1 hover:text-blue-500 transition-colors outline-none text-inherit font-inherit">
+                          {colDef.label} {typeFilter && <span className="text-blue-500 text-[10px]">●</span>}
+                          <Filter className="w-3 h-3 ml-1 text-gray-400" />
+                        </button>
+                      </th>
+                    );
+                  }
+
+                  if (colKey === "status") {
+                    return (
+                      <th key={colKey} className="px-6 py-4 transition-colors select-none">
+                        <button ref={statusBtnRef} onClick={(e) => { e.stopPropagation(); setShowStatusDropdown(!showStatusDropdown); setShowKecDropdown(false); setShowKelDropdown(false); setShowTypeDropdown(false); }}
+                          className="flex items-center gap-1 hover:text-blue-500 transition-colors outline-none text-inherit font-inherit">
+                          {colDef.label} {statusFilter && <span className="text-blue-500 text-[10px]">●</span>}
+                          <Filter className="w-3 h-3 ml-1 text-gray-400" />
+                        </button>
+                      </th>
+                    );
+                  }
+
                   return (
                     <th key={colKey} onClick={() => colDef.sortable && handleSort(colKey)}
-                      className={`px-6 py-4 text-xs font-bold ${colDef.sortable ? `cursor-pointer ${"hover:bg-white hover:text-gray-900"} shadow-sm transition-colors select-none` : ""}`}>
+                      className={`px-6 py-4 ${colDef.sortable ? `cursor-pointer ${"hover:text-blue-600"} transition-colors select-none` : ""}`}>
                       <div className="flex items-center gap-2">
                         {colDef.label}
                         {colDef.sortable && (
@@ -251,9 +408,10 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
               </tr>
             </thead>
             <tbody className={`divide-y text-sm ${"divide-gray-100"}`}>
-              {paginatedData.map((item) => (
+              {paginatedData.map((item, index) => (
                 <motion.tr key={item.nik} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className={`transition-colors group ${rowHoverBg}`}>
+                  <td className={`px-6 py-4 font-mono text-xs ${textSecondary}`}>{startIndex + index + 1}</td>
                   {displayCols.map(colKey => (
                     <td key={colKey} className="px-6 py-4">
                       {renderCellContent(item, colKey)}
@@ -272,7 +430,7 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
         </div>
 
         {/* ── PAGINATION ── */}
-        <div className={`px-6 py-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4 ${borderCol}`}>
+        <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t ${borderCol}`}>
           <div className="flex items-center gap-3">
             <span className={`text-sm font-medium ${textSecondary}`}>Rows</span>
             <div className="relative">
@@ -283,19 +441,22 @@ export default function StatusKuesioner() {  const [searchTerm, setSearchTerm] =
               <ChevronDown className={`w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${textSecondary}`} />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed ${btnOutline}`}>Prev</button>
-            <div className="flex gap-1 overflow-x-auto max-w-[150px] hide-scrollbar">
-              {getPageNumbers().map(num => (
-                <button key={num} onClick={() => setCurrentPage(num)}
-                  className={`px-3 py-2 rounded-lg text-sm font-bold border transition-all min-w-[36px] ${currentPage === num ? "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20" : btnOutline}`}>
-                  {num}
-                </button>
-              ))}
+              className={`px-3 py-2 text-sm font-medium rounded-lg border shadow-sm backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed ${btnOutline}`}>Prev</button>
+            <div className="hidden sm:flex items-center gap-1">
+              {getPaginationItems().map((page, idx) =>
+                page === "..." ? (
+                  <span key={`ellipsis-${idx}`} className={`w-9 h-9 flex items-center justify-center text-sm font-medium select-none ${textSecondary}`}>…</span>
+                ) : (
+                  <button key={page} onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 text-sm font-bold rounded-lg border transition-all ${currentPage === page ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25" : btnOutline}`}>{page}</button>
+                )
+              )}
             </div>
+            <span className={`sm:hidden text-sm font-medium px-2 ${textSecondary}`}>{currentPage} / {totalPages}</span>
             <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed ${btnOutline}`}>Next</button>
+              className={`px-3 py-2 text-sm font-medium rounded-lg border shadow-sm backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed ${btnOutline}`}>Next</button>
           </div>
         </div>
       </motion.div>

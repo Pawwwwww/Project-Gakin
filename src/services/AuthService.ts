@@ -1,11 +1,28 @@
 // ═══════════════════════════════════════════════════════════════
 //  AUTH SERVICE
 //  Logika login user dan admin
+//
+//  ALUR AUTENTIKASI:
+//  ┌─────────────────────────────────────────────────────────────┐
+//  │ LOGIN (NIK):                                               │
+//  │  1. Cek localStorage → user sudah terdaftar? → LOGIN OK    │
+//  │  2. Cek MOCK_USERS (GAKIN) → auto-register → LOGIN OK      │
+//  │  3. Cek MOCK_USERS (Non-GAKIN) → suruh DAFTAR dulu         │
+//  │  4. Tidak ditemukan → NIK tidak valid                       │
+//  │                                                             │
+//  │ REGISTER:                                                   │
+//  │  1. Sudah di localStorage? → tolak (sudah terdaftar)        │
+//  │  2. GAKIN di Dinsos? → tolak, suruh LOGIN langsung          │
+//  │  3. Ada di Dispendukcapil? → isi otomatis, daftar Non-GAKIN │
+//  │  4. Tidak ditemukan → tolak (NIK tidak valid)               │
+//  └─────────────────────────────────────────────────────────────┘
 // ═══════════════════════════════════════════════════════════════
 
 import { ADMIN_ACCOUNTS } from "../entities/admin";
 import { findUserByNIK, seedDummyUser, saveUser } from "./StorageService";
 import { MOCK_DINSOS_DB } from "../data/dinsos";
+import { MOCK_DISPENDUK_DB } from "../data/dispendukcapil";
+import { MOCK_USERS } from "../data/mockData";
 
 export interface AuthResult {
   success: boolean;
@@ -27,33 +44,61 @@ export function loginUser(nik: string): AuthResult {
     return { success: false, error: { type: "length", message: "NIK wajib 16 angka." } };
   }
 
+  // ── STEP 1: Cek user sudah terdaftar di localStorage (GAKIN atau Non-GAKIN) ──
   let found = findUserByNIK(nikVal);
+
   if (!found) {
-    const dinsosHit = MOCK_DINSOS_DB.find((d) => d.nik === nikVal);
-    if (dinsosHit) {
-      // Auto-register GAKIN user
-      const newUser = {
-        nik: dinsosHit.nik,
-        fullName: dinsosHit.fullName,
-        jenisKelamin: "",
-        tempatLahir: dinsosHit.tempatLahir,
-        tanggalLahir: dinsosHit.tanggalLahir,
-        phone: "",
-        alamatKtp: "", rtKtp: "", rwKtp: "", kelurahanKtp: "", kecamatanKtp: "", kotaKtp: "Surabaya", provinsiKtp: "Jawa Timur", kodePosKtp: "",
-        alamatDomisili: "", rtDomisili: "", rwDomisili: "", kelurahanDomisili: "", kecamatanDomisili: "", kotaDomisili: "Surabaya", provinsiDomisili: "Jawa Timur", kodePosDomisili: "",
-        pendidikan: "", agama: "", suku: "", punyaUsaha: "tidak" as const, bidangUsaha: "", punyaKeahlian: "tidak" as const, keahlian: "",
-        penghasilanPerHari: "", lamaBerusaha: "", gantiUsaha: "", bidangUsahaLainnya: "",
-        domisiliSama: true,
-        gakinStatus: "GAKIN" as const
-      };
-      saveUser(newUser);
-      found = newUser;
+    // ── STEP 2: Cek MOCK_USERS — apakah NIK ada di data hardcoded? ──
+    const mockHit = MOCK_USERS.find(u => u.nik === nikVal);
+
+    if (mockHit) {
+      if (mockHit.gakinStatus === "GAKIN") {
+        // GAKIN → auto-register & langsung login
+        saveUser(mockHit);
+        found = mockHit;
+      } else {
+        // Non-GAKIN ada di database kependudukan tapi belum daftar mandiri
+        return {
+          success: false,
+          error: {
+            type: "not_registered",
+            message: "NIK ditemukan di data kependudukan. Silakan daftar terlebih dahulu sebelum login."
+          }
+        };
+      }
     } else {
-      return { success: false, error: { type: "not_registered", message: "NIK yang Anda masukkan belum terdaftar." } };
+      // ── STEP 3: Cek Dinsos (GAKIN dari data Dinas Sosial) ──
+      const dinsosHit = MOCK_DINSOS_DB.find((d) => d.nik === nikVal);
+      if (dinsosHit) {
+        const newUser = { ...dinsosHit, domisiliSama: true, gakinStatus: "GAKIN" as const };
+        delete (newUser as any).status;
+        saveUser(newUser);
+        found = newUser;
+      } else {
+        // ── STEP 4: Cek Dispendukcapil (semua warga) ──
+        const dispendukHit = MOCK_DISPENDUK_DB.find((d) => d.nik === nikVal);
+        if (dispendukHit) {
+          return {
+            success: false,
+            error: {
+              type: "not_registered",
+              message: "NIK ditemukan di data kependudukan. Silakan daftar terlebih dahulu sebelum login."
+            }
+          };
+        } else {
+          return {
+            success: false,
+            error: {
+              type: "not_found",
+              message: "NIK tidak ditemukan dalam database kependudukan."
+            }
+          };
+        }
+      }
     }
   }
 
-  // Set session
+  // ── Login berhasil → set session ──
   localStorage.setItem("isLoggedIn", "true");
   localStorage.setItem("userNIK", nikVal);
   localStorage.setItem("role", "user");
@@ -119,6 +164,18 @@ export function loginAdmin(username: string, password: string): AuthResult {
     localStorage.setItem("adminKecamatan", found.kecamatan);
   } else {
     localStorage.removeItem("adminKecamatan");
+  }
+
+  // OPD-specific session
+  if (found.opdNama) {
+    localStorage.setItem("opdNama", found.opdNama);
+  } else {
+    localStorage.removeItem("opdNama");
+  }
+  if (found.opdKlasters) {
+    localStorage.setItem("opdKlasters", JSON.stringify(found.opdKlasters));
+  } else {
+    localStorage.removeItem("opdKlasters");
   }
 
   // Is default password? (only if it matches the hardcoded one and no override is present)

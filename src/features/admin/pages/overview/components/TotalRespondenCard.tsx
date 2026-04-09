@@ -46,15 +46,15 @@ export function TotalRespondenCard() {
               <div className={`flex justify-between items-center border p-2 sm:p-2.5 rounded-lg ${"bg-gray-50 border-gray-200"}`}>
                 <span className={`text-xs font-semibold ${textSecondary}`}>GAKIN</span>
                 <div className="text-right">
-                  <span className={`text-sm font-bold ${textPrimary}`}>{stats.gakinCount.toLocaleString('id-ID')}</span>
-                  <span className={`text-[10px] ml-1.5 ${textSecondary}`}>dari total terdata</span>
+                  <span className={`text-sm font-bold ${textPrimary}`}>{stats.gakinFilled.toLocaleString('id-ID')}</span>
+                  <span className={`text-[10px] ml-1.5 ${textSecondary}`}>dari {stats.gakinTarget} terdata</span>
                 </div>
               </div>
               <div className={`flex justify-between items-center border p-2 sm:p-2.5 rounded-lg ${"bg-gray-50 border-gray-200"}`}>
                 <span className={`text-xs font-semibold ${textSecondary}`}>Non-GAKIN</span>
                 <div className="text-right">
-                  <span className={`text-sm font-bold ${textPrimary}`}>{stats.nonGakinCount.toLocaleString('id-ID')}</span>
-                  <span className={`text-[10px] ml-1.5 ${textSecondary}`}>responden sukarela</span>
+                  <span className={`text-sm font-bold ${textPrimary}`}>{stats.nonGakinFilled.toLocaleString('id-ID')}</span>
+                  <span className={`text-[10px] ml-1.5 ${textSecondary}`}>responden</span>
                 </div>
               </div>
             </div>
